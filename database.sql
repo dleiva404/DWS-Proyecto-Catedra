@@ -41,7 +41,7 @@ CREATE TABLE usuario (
 
 CREATE TABLE empleado (
     id_empleado INT AUTO_INCREMENT PRIMARY KEY,
-    id_usuario INT NOT NULL,
+    id_usuario INT NOT NULL UNIQUE,
     id_supervisor INT NULL,
     nombre VARCHAR(100) NOT NULL,
     apellido VARCHAR(100) NOT NULL,
@@ -198,3 +198,37 @@ INSERT INTO tipo_solicitud (nombre) VALUES
 ('Vacaciones'),
 ('Permiso'),
 ('Constancia');
+
+-- =====================================================
+-- DATOS DE PRUEBA: USUARIOS
+-- =====================================================
+
+INSERT INTO usuario (id_rol, usuario, contrasena_hash, estado) VALUES
+(1, 'empleado1', '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', TRUE),
+(2, 'jefe1', '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', TRUE),
+(3, 'analista1', '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', TRUE),
+(4, 'gerente1', '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', TRUE),
+(5, 'asistente1', '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', TRUE),
+(6, 'admin1', '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', TRUE);
+
+
+-- =====================================================
+-- DATOS DE PRUEBA: EMPLEADOS
+-- =====================================================
+
+INSERT INTO empleado
+(id_usuario, id_supervisor, nombre, apellido, correo, cargo, fecha_ingreso, estado)
+VALUES
+(1, 2, 'Juan', 'Perez', 'juan.perez@grupocalma.com', 'Analista', '2024-01-15', TRUE),
+(2, NULL, 'Carlos', 'Gomez', 'carlos.gomez@grupocalma.com', 'Jefe de Área', '2022-03-10', TRUE);
+
+
+-- =====================================================
+-- DATOS DE PRUEBA: SALDOS DE VACACIONES
+-- =====================================================
+
+INSERT INTO saldo_vacaciones
+(id_empleado, anio, dias_asignados, dias_utilizados)
+VALUES
+(1, 2026, 15, 0),
+(2, 2026, 15, 0);
