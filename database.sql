@@ -111,7 +111,7 @@ CREATE TABLE etapa_solicitud (
     id_rol INT NOT NULL,
     nombre_etapa VARCHAR(100) NOT NULL,
     orden INT NOT NULL,
-    estado VARCHAR(30) NOT NULL,
+    estado VARCHAR(30) NOT NULL DEFAULT 'Pendiente',
     fecha_inicio DATETIME NULL,
     fecha_resolucion DATETIME NULL,
     decision VARCHAR(30) NULL,
@@ -219,9 +219,8 @@ INSERT INTO usuario (id_rol, usuario, contrasena_hash, estado) VALUES
 INSERT INTO empleado
 (id_usuario, id_supervisor, nombre, apellido, correo, cargo, fecha_ingreso, estado)
 VALUES
-(1, 2, 'Juan', 'Perez', 'juan.perez@grupocalma.com', 'Analista', '2024-01-15', TRUE),
-(2, NULL, 'Carlos', 'Gomez', 'carlos.gomez@grupocalma.com', 'Jefe de Área', '2022-03-10', TRUE);
-
+(2, NULL, 'Carlos', 'Gomez', 'carlos.gomez@grupocalma.com', 'Jefe de Área', '2022-03-10', TRUE),
+(1, 1, 'Juan', 'Perez', 'juan.perez@grupocalma.com', 'Analista', '2024-01-15', TRUE);
 
 -- =====================================================
 -- DATOS DE PRUEBA: SALDOS DE VACACIONES
