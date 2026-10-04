@@ -6,6 +6,9 @@ const db = require('./config/db');
 
 // 1. Importar las rutas de empleados
 const empleadoRoutes = require('./routes/empleadoRoutes');
+const usuarioRoutes = require('./routes/usuarioRoutes');
+const rolRoutes = require('./routes/rolRoutes');
+const tipoSolicitudRoutes = require('./routes/tipoSolicitudRoutes');
 
 const app = express();
 
@@ -19,6 +22,9 @@ app.get('/', (req, res) => {
 
 // 2. Activar las rutas de empleados bajo el prefijo /api/empleados
 app.use('/api/empleados', empleadoRoutes);
+app.use('/api/usuarios', usuarioRoutes);
+app.use('/api/roles', rolRoutes);
+app.use('/api/tipos-solicitud', tipoSolicitudRoutes);
 
 const PORT = process.env.PORT || 3000;
 
