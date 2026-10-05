@@ -51,7 +51,7 @@ const Usuario = {
 
     // Eliminar un usuario
     eliminar: (id, callback) => {
-        const query = 'DELETE FROM usuario WHERE id_usuario = ?';
+        const query = 'UPDATE usuario SET estado = FALSE WHERE id_usuario =?';
         db.query(query, [id], callback);
     }
 };

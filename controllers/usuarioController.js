@@ -153,7 +153,7 @@ const eliminarUsuario = (req, res) => {
         }
 
         res.json({
-            mensaje: 'Usuario eliminado exitosamente'
+            mensaje: 'Usuario desactivado exitosamente'
         });
     });
 };
