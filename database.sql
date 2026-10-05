@@ -204,12 +204,12 @@ INSERT INTO tipo_solicitud (nombre) VALUES
 -- =====================================================
 
 INSERT INTO usuario (id_rol, usuario, contrasena_hash, estado) VALUES
-(1, 'empleado1', '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', TRUE),
-(2, 'jefe1', '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', TRUE),
-(3, 'analista1', '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', TRUE),
-(4, 'gerente1', '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', TRUE),
-(5, 'asistente1', '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', TRUE),
-(6, 'admin1', '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', TRUE);
+(1, 'empleado1', '$2b$10$2ou26x3JXCLjgmS3WtK3p./H6P343IfK.rvfaOh6232Wm9jqQRkrW', TRUE),
+(2, 'jefe1', '$2b$10$2ou26x3JXCLjgmS3WtK3p./H6P343IfK.rvfaOh6232Wm9jqQRkrW', TRUE),
+(3, 'analista1', '$2b$10$2ou26x3JXCLjgmS3WtK3p./H6P343IfK.rvfaOh6232Wm9jqQRkrW', TRUE),
+(4, 'gerente1', '$2b$10$2ou26x3JXCLjgmS3WtK3p./H6P343IfK.rvfaOh6232Wm9jqQRkrW', TRUE),
+(5, 'asistente1', '$2b$10$2ou26x3JXCLjgmS3WtK3p./H6P343IfK.rvfaOh6232Wm9jqQRkrW', TRUE),
+(6, 'admin1', '$2b$10$2ou26x3JXCLjgmS3WtK3p./H6P343IfK.rvfaOh6232Wm9jqQRkrW', TRUE);
 
 
 -- =====================================================
