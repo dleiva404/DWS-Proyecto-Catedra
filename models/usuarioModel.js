@@ -3,13 +3,13 @@ const db = require('../config/db');
 const Usuario = {
     // Obtener todos los usuarios
     obtenerTodos: (callback) => {
-        const query = 'SELECT * FROM usuario';
+        const query = 'SELECT id_usuario, id_rol, usuario, estado FROM usuario';
         db.query(query, callback);
     },
 
     // Obtener un usuario por ID
     obtenerPorId: (id, callback) => {
-        const query = 'SELECT * FROM usuario WHERE id_usuario = ?';
+        const query = 'SELECT id_usuario, id_rol, usuario, estado FROM usuario WHERE id_usuario = ?';
         db.query(query, [id], callback);
     },
 
