@@ -11,6 +11,18 @@ class HttpError extends Error {
 }
 
 class AuthService {
+
+    // tokens logout
+    static tokensRevocados = new Set();
+
+    static logout(token) {
+        AuthService.tokensRevocados.add(token);
+    }
+
+    static estaRevocado(token) {
+        return AuthService.tokensRevocados.has(token);
+    }
+
     static async login(usuario, contrasena) {
         if (!usuario || !contrasena) {
             throw new HttpError('Usuario y/o contraseña no ingresados', 400);
