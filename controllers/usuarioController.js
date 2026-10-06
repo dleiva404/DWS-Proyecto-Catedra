@@ -1,4 +1,5 @@
 const Usuario = require('../models/usuarioModel');
+const bcrypt = require('bcryptjs');
 
 // Listar todos los usuarios
 const listarUsuarios = (req, res) => {
@@ -37,16 +38,16 @@ const obtenerUsuarioPorId = (req, res) => {
 };
 
 // Crear usuario
-// El hash de contraseña será integrado por el módulo de autenticación (Parte 3)
+// La contraseña se guarda con bcrypt
 const crearUsuario = (req, res) => {
     const {
         id_rol,
         usuario,
-        contrasena_hash,
+        contrasena,
         estado
     } = req.body;
 
-    if (!id_rol || !usuario || !contrasena_hash) {
+    if (!id_rol || !usuario || !contrasena) {
         return res.status(400).json({
             error: 'Faltan campos obligatorios'
         });
@@ -55,7 +56,7 @@ const crearUsuario = (req, res) => {
     const nuevoUsuario = {
         id_rol,
         usuario,
-        contrasena_hash,
+        contrasena_hash: bcrypt.hashSync(contrasena, 10),
         estado: estado === undefined ? true : estado
     };
 
@@ -82,18 +83,18 @@ const crearUsuario = (req, res) => {
 };
 
 // Actualizar usuario
-// El manejo seguro de contraseñas será integrado por la Parte 3
+// La contraseña se guarda con bcrypt
 const actualizarUsuario = (req, res) => {
     const { id } = req.params;
 
     const {
         id_rol,
         usuario,
-        contrasena_hash,
+        contrasena,
         estado
     } = req.body;
 
-    if (!id_rol || !usuario || !contrasena_hash) {
+    if (!id_rol || !usuario || !contrasena) {
         return res.status(400).json({
             error: 'Faltan campos obligatorios'
         });
@@ -102,7 +103,7 @@ const actualizarUsuario = (req, res) => {
     const usuarioActualizado = {
         id_rol,
         usuario,
-        contrasena_hash,
+        contrasena_hash: bcrypt.hashSync(contrasena, 10),
         estado: estado === undefined ? true : estado
     };
 
