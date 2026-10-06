@@ -23,6 +23,12 @@ class AuthService {
         return AuthService.tokensRevocados.has(token);
     }
 
+    // valida que el jefe solo actue sobre su personal
+    static async esJefeDe(idJefe, idEmpleado) {
+        if (!idJefe || !idEmpleado) return false;
+        return AuthModel.esJefeDe(idJefe, idEmpleado);
+    }
+
     static async login(usuario, contrasena) {
         if (!usuario || !contrasena) {
             throw new HttpError('Usuario y/o contraseña no ingresados', 400);

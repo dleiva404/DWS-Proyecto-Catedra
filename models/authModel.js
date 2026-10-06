@@ -14,6 +14,14 @@ class AuthModel {
         );
         return rows[0];
     }
+    // true si idEmpleado tiene como supervisor directo a idJefe
+    static async esJefeDe(idJefe, idEmpleado) {
+        const [rows] = await db.promise().query(
+            'SELECT id_empleado FROM empleado WHERE id_empleado = ? AND id_supervisor = ?',
+            [idEmpleado, idJefe]
+        );
+        return rows.length > 0;
+    }
 }
 
 module.exports = AuthModel;
