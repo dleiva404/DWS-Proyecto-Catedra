@@ -9,7 +9,7 @@ const empleadoRoutes = require('./routes/empleadoRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes');
 const rolRoutes = require('./routes/rolRoutes');
 const tipoSolicitudRoutes = require('./routes/tipoSolicitudRoutes');
-
+const authRoutes = require('./routes/authRoutes');
 const app = express();
 
 app.use(cors());
@@ -25,7 +25,7 @@ app.use('/api/empleados', empleadoRoutes);
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/roles', rolRoutes);
 app.use('/api/tipos-solicitud', tipoSolicitudRoutes);
-
+app.use('/api/auth', authRoutes);
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {

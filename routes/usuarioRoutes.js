@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const usuarioController = require('../controllers/usuarioController');
+const { AuthMiddleware, ROLES } = require('../middlewares/authMiddleware');
+
+// todas las rutas de usuarios para el Administrador de TI
+router.use(AuthMiddleware.verificarToken, AuthMiddleware.verificarRol(ROLES.ADMIN_TI));
 
 // Obtener todos los usuarios
 router.get('/', usuarioController.listarUsuarios);
