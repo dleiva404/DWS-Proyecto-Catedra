@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Grupo Calma - Solicitudes</title>
+    <link rel="stylesheet" href="solicitudes.css">
+</head>
+
+<body>
+
+    <header class="header">
+        <div class="logo-area">
+            <img src="../assets/Logo.jpeg" alt="Invercalma - Grupo Calma" class="logo">
+        </div>
+
+        <nav class="nav">
+            <a href="/dashboard/dashboard.html">Dashboard</a>
+            <a href="/solicitudes/solicitudes.html" class="activo">Mis Solicitudes</a>
+            <a href="/solicitudes/solicitudes.html">Notificaciones</a>
+        </nav>
+
+        <div class="usuario-area">
+            <span>♙</span>
+            <strong id="nombreUsuario">Usuario</strong>
+            <button id="cerrarSesion">Salir</button>
+        </div>
+    </header>
+
+    <main class="contenido">
+
+        <div class="titulo">
+            <div>
+                <h1>Mis Solicitudes</h1>
+                <p>Consulta y administra tus solicitudes de Recursos Humanos.</p>
+            </div>
+
+            <button id="btnNueva" class="btn-principal">+ Nueva solicitud</button>
+        </div>
+
+        <section class="estadisticas">
+            <div class="estadistica pendiente">
+                <strong id="pendientes">0</strong>
+                <span>Pendientes</span>
+            </div>
+
+            <div class="estadistica aprobada">
+                <strong id="aprobadas">0</strong>
+                <span>Aprobadas</span>
+            </div>
+
+            <div class="estadistica rechazada">
+                <strong id="rechazadas">0</strong>
+                <span>Rechazadas</span>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>Historial de solicitudes</h2>
+
+            <div class="tabla-contenedor">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tipo</th>
+                            <th>Fecha solicitud</th>
+                            <th>Inicio</th>
+                            <th>Fin</th>
+                            <th>Motivo</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tablaSolicitudes">
+                        <tr>
+                            <td colspan="7">Cargando solicitudes...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="modal" class="modal oculto">
+        <div class="modal-contenido">
+
+            <button id="cerrarModal" class="cerrar">×</button>
+
+            <h2>Nueva Solicitud</h2>
+            <p class="subtitulo">Selecciona el tipo y completa los datos.</p>
+
+            <form id="formSolicitud">
+
+                <label for="tipo">Tipo de solicitud</label>
+
+                <select id="tipo" required>
+                    <option value="">Selecciona una opción</option>
+                    <option value="1">Vacaciones</option>
+                    <option value="2">Permiso</option>
+                    <option value="3">Constancia Salarial</option>
+                    <option value="4">Soporte Técnico</option>
+                </select>
+
+                <div id="camposFechas" class="fechas">
+
+                    <div>
+                        <label for="fechaInicio">Fecha de inicio</label>
+                        <input type="date" id="fechaInicio">
+                    </div>
+
+                    <div>
+                        <label for="fechaFin">Fecha de fin</label>
+                        <input type="date" id="fechaFin">
+                    </div>
+
+                </div>
+
+                <label for="motivo">Motivo / Descripción</label>
+
+                <textarea id="motivo" maxlength="500" placeholder="Escribe el motivo o descripción..."></textarea>
+
+                <div id="mensaje" class="mensaje"></div>
+
+                <button type="submit" class="btn-enviar">Crear solicitud</button>
+
+            </form>
+
+        </div>
+    </div>
+
+    <script src="solicitudes.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Grupo Calma - Dashboard</title>
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+
+<body>
+
+    <header class="header">
+        <div class="logo-area">
+            <img src="../assets/logo.jpeg" alt="Invercalma - Grupo Calma" class="logo">
+        </div>
+
+        <nav class="nav">
+            <a href="/dashboard/dashboard.html" class="activo">Dashboard</a>
+            <a href="/solicitudes/solicitudes.html">Mis Solicitudes</a>
+            <a>Notificaciones</a>
+        </nav>
+
+        <div class="usuario-area">
+            <span>♙</span>
+            <strong id="nombreUsuario">Usuario</strong>
+            <button id="cerrarSesion">Salir</button>
+        </div>
+    </header>
+
+    <main class="contenido">
+
+        <section class="bienvenida">
+            <h1>Bienvenido, <span id="nombreBienvenida">Usuario</span></h1>
+            <p>Gestiona tus solicitudes de Recursos Humanos.</p>
+        </section>
+
+        <section class="dashboard-grid">
+
+            <div class="panel solicitudes-panel">
+                <h2>Nueva Solicitud</h2>
+
+                <div class="solicitudes-grid">
+
+                    <a href="/solicitudes/solicitudes.html?tipo=vacaciones" class="solicitud-card">
+                        <span class="icono">🏖️</span>
+                        <span>Vacaciones</span>
+                    </a>
+
+                    <a href="/solicitudes/solicitudes.html?tipo=permiso" class="solicitud-card">
+                        <span class="icono">📄</span>
+                        <span>Permisos</span>
+                    </a>
+
+                    <a href="/solicitudes/solicitudes.html?tipo=constancia" class="solicitud-card">
+                        <span class="icono">💰</span>
+                        <span>Constancia<br>Salarial</span>
+                    </a>
+
+                    <a href="/solicitudes/solicitudes.html?tipo=soporte" class="solicitud-card">
+                        <span class="icono">🎧</span>
+                        <span>Soporte<br>Técnico</span>
+                    </a>
+
+                </div>
+            </div>
+
+            <div class="panel resumen-panel">
+                <h2>Resumen de Mis Solicitudes</h2>
+
+                <div class="estadisticas">
+                    <div class="estadistica pendiente">
+                        <strong id="pendientes">0</strong>
+                        <span>Pendientes</span>
+                    </div>
+
+                    <div class="estadistica aprobada">
+                        <strong id="aprobadas">0</strong>
+                        <span>Aprobadas</span>
+                    </div>
+
+                    <div class="estadistica rechazada">
+                        <strong id="rechazadas">0</strong>
+                        <span>Rechazadas</span>
+                    </div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tipo</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tablaSolicitudes">
+                        <tr>
+                            <td colspan="4">Cargando solicitudes...</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <a class="ver-todas" href="/solicitudes/solicitudes.html">
+                    Ver todas las solicitudes
+                </a>
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="dashboard.js"></script>
+</body>
+
+</html>

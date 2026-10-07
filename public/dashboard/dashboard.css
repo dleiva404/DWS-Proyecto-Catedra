@@ -1,0 +1,283 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f6f8;
+    color: #20242b
+}
+
+.header {
+    min-height: 110px;
+    background: #d9d9dd;
+    display: flex;
+    align-items: center;
+    padding: 10px 38px;
+    gap: 30px;
+    border-bottom: 1px solid #c8c8cc
+}
+
+.logo-area {
+    width: 300px;
+    height: 90px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    flex-shrink: 0
+}
+
+.logo {
+    width: 280px;
+    height: 85px;
+    object-fit: contain;
+    object-position: left center
+}
+
+.nav {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: auto
+}
+
+.nav a {
+    color: #20242b;
+    text-decoration: none;
+    padding: 14px 17px;
+    font-size: 14px;
+    white-space: nowrap
+}
+
+.nav a:hover,
+.nav a.activo {
+    background: #c5c5ca
+}
+
+.usuario-area {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    white-space: nowrap
+}
+
+.usuario-area button {
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    font-size: 13px
+}
+
+.usuario-area button:hover {
+    text-decoration: underline
+}
+
+.contenido {
+    padding: 42px 45px 70px
+}
+
+.bienvenida {
+    margin-bottom: 27px
+}
+
+.bienvenida h1 {
+    font-size: 24px;
+    font-weight: 500;
+    margin-bottom: 7px
+}
+
+.bienvenida p {
+    color: #666;
+    font-size: 14px
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 38px;
+    align-items: stretch
+}
+
+.panel {
+    background: #fff;
+    border: 1px solid #bdbdbd;
+    padding: 25px;
+    min-height: 390px
+}
+
+.panel h2 {
+    text-align: center;
+    font-size: 18px;
+    margin-bottom: 24px
+}
+
+.solicitudes-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px
+}
+
+.solicitud-card {
+    min-height: 125px;
+    background: #edf6fc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    padding: 20px;
+    color: #111;
+    text-decoration: none;
+    font-size: 16px;
+    cursor: pointer;
+    transition: .2s
+}
+
+.solicitud-card:hover {
+    background: #e2f0f9;
+    transform: translateY(-2px)
+}
+
+.icono {
+    font-size: 34px;
+    flex-shrink: 0
+}
+
+.estadisticas {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 18px
+}
+
+.estadistica {
+    height: 60px;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center
+}
+
+.estadistica strong {
+    font-size: 20px;
+    margin-bottom: 2px
+}
+
+.estadistica span {
+    font-size: 11px
+}
+
+.pendiente {
+    background: #ff9028
+}
+
+.aprobada {
+    background: #35c45a
+}
+
+.rechazada {
+    background: #ff3b40
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse
+}
+
+thead {
+    background: #dedee2
+}
+
+th {
+    padding: 11px 6px;
+    font-size: 12px
+}
+
+td {
+    padding: 12px 6px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+    font-size: 12px
+}
+
+.estado {
+    display: inline-block;
+    min-width: 65px;
+    padding: 6px;
+    color: #fff;
+    font-size: 10px
+}
+
+.estado-pendiente {
+    background: #ff9028
+}
+
+.estado-aprobada {
+    background: #35c45a
+}
+
+.estado-rechazada {
+    background: #ff3b40
+}
+
+.ver-todas {
+    display: block;
+    text-align: center;
+    margin-top: 18px;
+    color: #1260c9;
+    text-decoration: none;
+    font-size: 12px
+}
+
+.ver-todas:hover {
+    text-decoration: underline
+}
+
+@media(max-width:950px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr
+    }
+
+    .panel {
+        min-height: auto
+    }
+}
+
+@media(max-width:700px) {
+    .header {
+        flex-wrap: wrap;
+        padding: 15px 20px
+    }
+
+    .logo-area {
+        width: 100%;
+        height: 70px
+    }
+
+    .logo {
+        width: 240px;
+        height: 65px
+    }
+
+    .nav {
+        margin-left: 0;
+        width: 100%;
+        overflow-x: auto
+    }
+
+    .usuario-area {
+        margin-left: 0
+    }
+
+    .contenido {
+        padding: 30px 20px
+    }
+
+    .solicitudes-grid,
+    .estadisticas {
+        grid-template-columns: 1fr
+    }
+}
