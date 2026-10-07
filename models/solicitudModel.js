@@ -1,26 +1,72 @@
-const db = require('../config/db'); 
+const db = require('../config/db');
 
 const Solicitud = {
-    // Obtener todas las solicitudes
+
     obtenerTodos: (callback) => {
         const query = 'SELECT * FROM solicitud';
         db.query(query, callback);
     },
 
-    // Obtener una solicitud por ID
     obtenerPorId: (id, callback) => {
-        const query = 'SELECT * FROM solicitud WHERE id_solicitud = ?';
+        const query = `
+            SELECT *
+            FROM solicitud
+            WHERE id_solicitud = ?
+        `;
         db.query(query, [id], callback);
     },
 
-    // Crear una nueva solicitud
+    obtenerPorEmpleado: (id_empleado, callback) => {
+        const query = `
+            SELECT *
+            FROM solicitud
+            WHERE id_empleado = ?
+            ORDER BY fecha_solicitud DESC
+        `;
+        db.query(query, [id_empleado], callback);
+    },
+
+    buscarTraslape: (id_empleado, fecha_inicio, fecha_fin, callback) => {
+        const query = `
+            SELECT *
+            FROM solicitud
+            WHERE id_empleado = ?
+              AND id_tipo_solicitud = 1
+              AND estado NOT IN ('Rechazada')
+              AND fecha_inicio IS NOT NULL
+              AND fecha_fin IS NOT NULL
+              AND fecha_inicio <= ?
+              AND fecha_fin >= ?
+        `;
+        db.query(query, [
+            id_empleado,
+            fecha_fin,
+            fecha_inicio
+        ], callback);
+    },
+
+    actualizarEstado: (id, estado, callback) => {
+        const query = `
+            UPDATE solicitud
+            SET estado = ?
+            WHERE id_solicitud = ?
+        `;
+        db.query(query, [estado, id], callback);
+    },
+
     crear: (data, callback) => {
         const query = `
             INSERT INTO solicitud
-            (id_empleado, id_tipo_solicitud, fecha_inicio, fecha_fin, motivo, estado)
+            (
+                id_empleado,
+                id_tipo_solicitud,
+                fecha_inicio,
+                fecha_fin,
+                motivo,
+                estado
+            )
             VALUES (?, ?, ?, ?, ?, ?)
         `;
-
         db.query(query, [
             data.id_empleado,
             data.id_tipo_solicitud,
@@ -31,7 +77,6 @@ const Solicitud = {
         ], callback);
     },
 
-    // Actualizar una solicitud
     actualizar: (id, data, callback) => {
         const query = `
             UPDATE solicitud
@@ -43,7 +88,6 @@ const Solicitud = {
                 estado = ?
             WHERE id_solicitud = ?
         `;
-
         db.query(query, [
             data.id_empleado,
             data.id_tipo_solicitud,
@@ -55,9 +99,11 @@ const Solicitud = {
         ], callback);
     },
 
-    // Eliminar una solicitud
     eliminar: (id, callback) => {
-        const query = 'DELETE FROM solicitud WHERE id_solicitud = ?';
+        const query = `
+            DELETE FROM solicitud
+            WHERE id_solicitud = ?
+        `;
         db.query(query, [id], callback);
     }
 };

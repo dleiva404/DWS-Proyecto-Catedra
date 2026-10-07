@@ -3,29 +3,27 @@ const cors = require('cors');
 require('dotenv').config();
 
 const db = require('./config/db');
-
-// 1. Importar las rutas de empleados
 const empleadoRoutes = require('./routes/empleadoRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes');
 const rolRoutes = require('./routes/rolRoutes');
 const tipoSolicitudRoutes = require('./routes/tipoSolicitudRoutes');
 const authRoutes = require('./routes/authRoutes');
+const solicitudRoutes = require('./routes/solicitudRoutes');
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static('public'));
 
-app.get('/', (req, res) => {
-    res.send('api funcionando');
-});
-
-// 2. Activar las rutas de empleados bajo el prefijo /api/empleados
 app.use('/api/empleados', empleadoRoutes);
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/roles', rolRoutes);
 app.use('/api/tipos-solicitud', tipoSolicitudRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/solicitudes', solicitudRoutes);
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {

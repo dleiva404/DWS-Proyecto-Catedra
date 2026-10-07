@@ -1,6 +1,7 @@
-const db = require('../config/db'); 
+const db = require('../config/db');
 
 const SaldoVacaciones = {
+
     // Obtener todos los saldos de vacaciones
     obtenerTodos: (callback) => {
         const query = 'SELECT * FROM saldo_vacaciones';
@@ -9,15 +10,40 @@ const SaldoVacaciones = {
 
     // Obtener un saldo de vacaciones por ID
     obtenerPorId: (id, callback) => {
-        const query = 'SELECT * FROM saldo_vacaciones WHERE id_saldo = ?';
+        const query = `
+            SELECT *
+            FROM saldo_vacaciones
+            WHERE id_saldo = ?
+        `;
+
         db.query(query, [id], callback);
     },
 
     // Obtener el saldo de vacaciones de un empleado para un año específico
     obtenerPorEmpleadoAnio: (id_empleado, anio, callback) => {
         const query = `
-            SELECT * FROM saldo_vacaciones
-            WHERE id_empleado = ? AND anio = ?
+            SELECT *
+            FROM saldo_vacaciones
+            WHERE id_empleado = ?
+              AND anio = ?
+        `;
+
+        db.query(query, [id_empleado, anio], callback);
+    },
+
+    // Obtener los días disponibles de vacaciones
+    obtenerDiasDisponibles: (id_empleado, anio, callback) => {
+        const query = `
+            SELECT
+                id_saldo,
+                id_empleado,
+                anio,
+                dias_asignados,
+                dias_utilizados,
+                (dias_asignados - dias_utilizados) AS dias_disponibles
+            FROM saldo_vacaciones
+            WHERE id_empleado = ?
+              AND anio = ?
         `;
 
         db.query(query, [id_empleado, anio], callback);
@@ -27,7 +53,12 @@ const SaldoVacaciones = {
     crear: (data, callback) => {
         const query = `
             INSERT INTO saldo_vacaciones
-            (id_empleado, anio, dias_asignados, dias_utilizados)
+            (
+                id_empleado,
+                anio,
+                dias_asignados,
+                dias_utilizados
+            )
             VALUES (?, ?, ?, ?)
         `;
 

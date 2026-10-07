@@ -1,6 +1,7 @@
-const db = require('../config/db'); 
+const db = require('../config/db');
 
 const EtapaSolicitud = {
+
     // Obtener todas las etapas de solicitudes
     obtenerTodos: (callback) => {
         const query = 'SELECT * FROM etapa_solicitud';
@@ -9,8 +10,26 @@ const EtapaSolicitud = {
 
     // Obtener una etapa por ID
     obtenerPorId: (id, callback) => {
-        const query = 'SELECT * FROM etapa_solicitud WHERE id_etapa_solicitud = ?';
+        const query = `
+            SELECT *
+            FROM etapa_solicitud
+            WHERE id_etapa_solicitud = ?
+        `;
+
         db.query(query, [id], callback);
+    },
+
+    // Obtener todas las etapas de una solicitud
+    // Se ordenan según el número de etapa
+    obtenerPorSolicitud: (id_solicitud, callback) => {
+        const query = `
+            SELECT *
+            FROM etapa_solicitud
+            WHERE id_solicitud = ?
+            ORDER BY orden ASC
+        `;
+
+        db.query(query, [id_solicitud], callback);
     },
 
     // Crear una nueva etapa de solicitud
