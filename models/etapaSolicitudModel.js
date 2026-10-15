@@ -32,6 +32,27 @@ const EtapaSolicitud = {
         db.query(query, [id_solicitud], callback);
     },
 
+    // Obtener etapas pendientes de un rol
+    // Si viene idJefe, solo las de empleados a su cargo
+    obtenerPendientesPorRol: (id_rol, idJefe, callback) => {
+        const query = `
+            SELECT es.id_etapa_solicitud, es.nombre_etapa, es.orden,
+                   s.id_solicitud, ts.nombre AS tipo, s.fecha_inicio, s.fecha_fin,
+                   s.motivo, s.fecha_solicitud,
+                   e.id_empleado, e.nombre, e.apellido
+            FROM etapa_solicitud es
+            JOIN solicitud s ON s.id_solicitud = es.id_solicitud
+            JOIN tipo_solicitud ts ON ts.id_tipo_solicitud = s.id_tipo_solicitud
+            JOIN empleado e ON e.id_empleado = s.id_empleado
+            WHERE es.estado = 'Pendiente'
+              AND es.id_rol = ?
+              AND (? IS NULL OR e.id_supervisor = ?)
+            ORDER BY s.fecha_solicitud
+        `;
+
+        db.query(query, [id_rol, idJefe, idJefe], callback);
+    },
+
     // Crear una nueva etapa de solicitud
     crear: (data, callback) => {
         const query = `
