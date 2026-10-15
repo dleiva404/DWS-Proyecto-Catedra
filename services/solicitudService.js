@@ -1,6 +1,7 @@
 const Solicitud = require('../models/solicitudModel');
 const SaldoVacaciones = require('../models/saldoVacacionesModel');
 const EtapaSolicitud = require('../models/etapaSolicitudModel');
+const { AuthService } = require('./authService');
 
 const SolicitudService = {
 
@@ -10,6 +11,62 @@ const SolicitudService = {
         Solicitud.obtenerPorEmpleado(id_empleado, (err, resultados) => {
             if (err) return callback({ status: 500, mensaje: 'Error interno al consultar las solicitudes' });
             callback(null, resultados);
+        });
+    },
+
+    // Etapas segun su rol
+    obtenerPendientes: (usuario, callback) => {
+        const rolesAprobadores = { 'Jefe inmediato': 2, 'Analista de Nómina': 3, 'Gerente': 4 };
+        const id_rol = rolesAprobadores[usuario.rol];
+
+        if (!id_rol) return callback({ status: 403, mensaje: 'Su rol no aprueba solicitudes' });
+
+        // el jefe solo ve las de su personal
+        const idJefe = id_rol === 2 ? usuario.id_empleado : null;
+        if (id_rol === 2 && !idJefe) return callback({ status: 400, mensaje: 'El jefe no tiene empleado asociado' });
+
+        const consultar = (incluirRespaldo) => {
+            EtapaSolicitud.obtenerPendientesPorRol(id_rol, idJefe, incluirRespaldo, (err, resultados) => {
+                if (err) return callback({ status: 500, mensaje: 'Error al consultar las solicitudes pendientes' });
+                callback(null, resultados);
+            });
+        };
+
+        // el gerente ve los permisos de la analista solo si no hay analista disponible (regla 5)
+        if (id_rol !== 4) return consultar(false);
+
+        Solicitud.contarAnalistasDisponibles((err, filas) => {
+            if (err) return callback({ status: 500, mensaje: 'Error al verificar disponibilidad de analistas' });
+            consultar(filas[0].disponibles === 0);
+        });
+    },
+
+
+    // Todas las solicitudes (Asistente, Analista, Gerente)
+    obtenerTodas: (callback) => {
+        Solicitud.obtenerTodasConDetalle((err, resultados) => {
+            if (err) return callback({ status: 500, mensaje: 'Error al consultar las solicitudes' });
+            callback(null, resultados);
+        });
+    },
+
+    // Historial de una solicitud
+    obtenerHistorial: (id_solicitud, usuario, callback) => {
+        Solicitud.obtenerPorId(id_solicitud, (err, solicitudes) => {
+            if (err) return callback({ status: 500, mensaje: 'Error al consultar la solicitud' });
+            if (!solicitudes.length) return callback({ status: 404, mensaje: 'Solicitud no encontrada' });
+
+            const solicitud = solicitudes[0];
+            const esDueno = Number(solicitud.id_empleado) === Number(usuario.id_empleado);
+            const esRRHH = ['Asistente de planilla', 'Analista de Nómina', 'Gerente'].includes(usuario.rol);
+
+            if (!esDueno && !esRRHH)
+                return callback({ status: 403, mensaje: 'No tiene permisos para ver esta solicitud' });
+
+            EtapaSolicitud.obtenerHistorial(id_solicitud, (err, etapas) => {
+                if (err) return callback({ status: 500, mensaje: 'Error al consultar el historial' });
+                callback(null, { solicitud, etapas });
+            });
         });
     },
 
@@ -26,7 +83,10 @@ const SolicitudService = {
         if (fin < inicio)
             return callback({ status: 400, mensaje: 'La fecha de fin no puede ser anterior a la fecha de inicio' });
 
-        const diasSolicitados = Math.floor((fin - inicio) / 86400000) + 1;
+        const diasSolicitados = contarDiasHabiles(inicio, fin);
+
+        if (diasSolicitados === 0)
+            return callback({ status: 400, mensaje: 'El rango no incluye días hábiles'});
 
         Solicitud.buscarTraslape(id_empleado, fecha_inicio, fecha_fin, (err, traslapes) => {
             if (err) return callback({ status: 500, mensaje: 'Error al verificar las fechas' });
@@ -136,7 +196,7 @@ const SolicitudService = {
         });
     },
 
-    resolverEtapa: (id_etapa, rol, decision, comentario, callback) => {
+    resolverEtapa: (id_etapa, rol, decision, comentario, id_empleado, id_usuario, callback) => {
         if (!id_etapa) return callback({ status: 400, mensaje: 'La etapa es obligatoria' });
 
         if (!['Aprobada', 'Rechazada'].includes(decision))
@@ -154,8 +214,11 @@ const SolicitudService = {
             if (etapa.estado !== 'Pendiente')
                 return callback({ status: 400, mensaje: 'Esta etapa no está disponible para ser resuelta' });
 
-            if (Number(rol) !== Number(etapa.id_rol))
-                return callback({ status: 403, mensaje: 'No tiene permisos para resolver esta etapa' });
+            validarRol(etapa, rol, errRol => {
+            if (errRol) return callback(errRol);
+
+            validarJefe(etapa, id_empleado, errJefe => {
+            if (errJefe) return callback(errJefe);
 
             const ahora = new Date();
 
@@ -168,7 +231,8 @@ const SolicitudService = {
                 fecha_inicio: etapa.fecha_inicio,
                 fecha_resolucion: ahora,
                 decision,
-                comentario: comentario || null
+                comentario: comentario || null,
+                id_usuario_responsable: id_usuario
             }, err => {
                 if (err) return callback({ status: 500, mensaje: 'Error al registrar la decisión' });
 
@@ -205,6 +269,8 @@ const SolicitudService = {
                     });
                 });
             });
+            });
+            });
         });
     }
 };
@@ -220,6 +286,58 @@ function crearEtapas(etapas, index, callback) {
 
         crearEtapas(etapas, index + 1, callback);
     });
+}
+
+// valida el rol; el gerente sustituye a la analista solo en permisos y si no hay analista disponible (regla 5)
+function validarRol(etapa, rol, callback) {
+    if (Number(rol) === Number(etapa.id_rol)) return callback(null);
+
+    const esRespaldo = Number(rol) === 4 && Number(etapa.id_rol) === 3;
+    if (!esRespaldo) return callback({ status: 403, mensaje: 'No tiene permisos para resolver esta etapa' });
+
+    Solicitud.obtenerPorId(etapa.id_solicitud, (err, solicitudes) => {
+        if (err || !solicitudes.length) return callback({ status: 500, mensaje: 'No se pudo consultar la solicitud' });
+
+        if (Number(solicitudes[0].id_tipo_solicitud) !== 2)
+            return callback({ status: 403, mensaje: 'El Gerente solo puede sustituir a la Analista en permisos' });
+
+        Solicitud.contarAnalistasDisponibles((err, filas) => {
+            if (err) return callback({ status: 500, mensaje: 'Error al verificar disponibilidad de analistas' });
+
+            if (filas[0].disponibles > 0)
+                return callback({ status: 403, mensaje: 'Hay una Analista de Nómina disponible para esta revisión' });
+
+            callback(null);
+        });
+    });
+}
+
+// valida la jerarquia
+function validarJefe(etapa, idJefe, callback) {
+    if (Number(etapa.id_rol) !== 2) return callback(null);
+
+    Solicitud.obtenerPorId(etapa.id_solicitud, (err, solicitudes) => {
+        if (err || !solicitudes.length) return callback({ status: 500, mensaje: 'No se pudo consultar la solicitud' });
+
+        AuthService.esJefeDe(idJefe, solicitudes[0].id_empleado)
+            .then(esJefe => {
+                if (!esJefe) return callback({ status: 403, mensaje: 'Solo puede resolver solicitudes de su personal a cargo' });
+                callback(null);
+            })
+            .catch(() => callback({ status: 500, mensaje: 'Error al validar el jefe inmediato' }));
+    });
+}
+
+// cuenta dias de lunes a sabado entre dos fechas (incluidas)
+function contarDiasHabiles(inicio, fin) {
+    let dias = 0;
+    const actual = new Date(inicio);
+
+    while (actual <= fin) {
+        if (actual.getUTCDay() !== 0) dias++;
+        actual.setUTCDate(actual.getUTCDate() + 1);
+    }
+    return dias;
 }
 
 function finalizarSolicitud(id_solicitud, callback) {
@@ -238,7 +356,7 @@ function finalizarSolicitud(id_solicitud, callback) {
 
         const inicio = new Date(solicitud.fecha_inicio);
         const fin = new Date(solicitud.fecha_fin);
-        const dias = Math.floor((fin - inicio) / 86400000) + 1;
+        const dias = contarDiasHabiles(inicio, fin);
         const anio = inicio.getFullYear();
 
         SaldoVacaciones.obtenerPorEmpleadoAnio(

@@ -2,13 +2,30 @@ const express = require('express');
 const router = express.Router();
 
 const solicitudController = require('../controllers/solicitudController');
-const { AuthMiddleware } = require('../middlewares/authMiddleware');
+const { AuthMiddleware, ROLES } = require ('../middlewares/authMiddleware');
 
 router.use(AuthMiddleware.verificarToken);
 
 router.get(
     '/mis-solicitudes',
     solicitudController.obtenerMisSolicitudes
+);
+
+router.get(
+    '/pendientes',
+    AuthMiddleware.verificarRol(ROLES.JEFE, ROLES.ANALISTA, ROLES.GERENTE),
+    solicitudController.obtenerPendientes
+    );
+
+router.get(
+    '/',
+    AuthMiddleware.verificarRol(ROLES.ASISTENTE, ROLES.ANALISTA, ROLES.GERENTE),
+    solicitudController.obtenerTodas
+);
+
+router.get(
+    '/:id/historial',
+    solicitudController.obtenerHistorial
 );
 
 router.post(
@@ -18,6 +35,7 @@ router.post(
 
 router.put(
     '/etapa/:id/resolver',
+    AuthMiddleware.verificarRol(ROLES.JEFE, ROLES.ANALISTA, ROLES.GERENTE),
     solicitudController.resolverEtapa
 );
 

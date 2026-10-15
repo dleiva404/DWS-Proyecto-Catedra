@@ -32,6 +32,41 @@ const EtapaSolicitud = {
         db.query(query, [id_solicitud], callback);
     },
 
+    // Obtener etapas pendientes de un rol
+    // Si viene idJefe, solo las de empleados a su cargo
+    obtenerPendientesPorRol: (id_rol, idJefe, incluirRespaldo, callback) => {
+        const query = `
+            SELECT es.id_etapa_solicitud, es.nombre_etapa, es.orden,
+                   s.id_solicitud, ts.nombre AS tipo, s.fecha_inicio, s.fecha_fin,
+                   s.motivo, s.fecha_solicitud,
+                   e.id_empleado, e.nombre, e.apellido
+            FROM etapa_solicitud es
+            JOIN solicitud s ON s.id_solicitud = es.id_solicitud
+            JOIN tipo_solicitud ts ON ts.id_tipo_solicitud = s.id_tipo_solicitud
+            JOIN empleado e ON e.id_empleado = s.id_empleado
+            WHERE es.estado = 'Pendiente'
+              AND (es.id_rol = ? OR (? AND es.id_rol = 3 AND s.id_tipo_solicitud = 2))
+              AND (? IS NULL OR e.id_supervisor = ?)
+            ORDER BY s.fecha_solicitud
+        `;
+
+        db.query(query, [id_rol, incluirRespaldo, idJefe, idJefe], callback);
+    },
+
+    // Historial de etapas de una solicitud con el usuario responsable
+    obtenerHistorial: (id_solicitud, callback) => {
+        const query = `
+            SELECT es.orden, es.nombre_etapa, es.estado, es.decision, es.comentario,
+                   es.fecha_inicio, es.fecha_resolucion, u.usuario AS responsable
+            FROM etapa_solicitud es
+            LEFT JOIN usuario u ON u.id_usuario = es.id_usuario_responsable
+            WHERE es.id_solicitud = ?
+            ORDER BY es.orden
+        `;
+
+        db.query(query, [id_solicitud], callback);
+    },
+
     // Crear una nueva etapa de solicitud
     crear: (data, callback) => {
         const query = `
@@ -77,7 +112,8 @@ const EtapaSolicitud = {
                 fecha_inicio = ?,
                 fecha_resolucion = ?,
                 decision = ?,
-                comentario = ?
+                comentario = ?,
+                id_usuario_responsable =?
             WHERE id_etapa_solicitud = ?
         `;
 
@@ -91,6 +127,7 @@ const EtapaSolicitud = {
             data.fecha_resolucion,
             data.decision,
             data.comentario,
+            data.id_usuario_responsable || null,
             id
         ], callback);
     }
