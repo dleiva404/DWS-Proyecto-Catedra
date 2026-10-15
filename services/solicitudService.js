@@ -1,6 +1,7 @@
 const Solicitud = require('../models/solicitudModel');
 const SaldoVacaciones = require('../models/saldoVacacionesModel');
 const EtapaSolicitud = require('../models/etapaSolicitudModel');
+const { AuthService } = require('./authService');
 
 const SolicitudService = {
 
@@ -24,7 +25,7 @@ const SolicitudService = {
         const idJefe = id_rol === 2 ? usuario.id_empleado : null;
         if (id_rol === 2 && !idJefe) return callback({ status: 400, mensaje: 'El jefe no tiene empleado asociado' });
 
-        EtapaSolicitud.obtenerPendientesPorRol(id_rol, idJefe, (err, resultados) => {
+    EtapaSolicitud.obtenerPendientesPorRol(id_rol, idJefe, (err, resultados) => {
             if (err) return callback({ status: 500, mensaje: 'Error al consultar las solicitudes pendientes' });
             callback(null, resultados);
         });
@@ -153,7 +154,7 @@ const SolicitudService = {
         });
     },
 
-    resolverEtapa: (id_etapa, rol, decision, comentario, callback) => {
+    resolverEtapa: (id_etapa, rol, decision, comentario, id_empleado, callback) => {
         if (!id_etapa) return callback({ status: 400, mensaje: 'La etapa es obligatoria' });
 
         if (!['Aprobada', 'Rechazada'].includes(decision))
@@ -173,6 +174,9 @@ const SolicitudService = {
 
             if (Number(rol) !== Number(etapa.id_rol))
                 return callback({ status: 403, mensaje: 'No tiene permisos para resolver esta etapa' });
+
+            validarJefe(etapa, id_empleado, errJefe => {
+            if (errJefe) return callback(errJefe);
 
             const ahora = new Date();
 
@@ -222,6 +226,7 @@ const SolicitudService = {
                     });
                 });
             });
+            });
         });
     }
 };
@@ -236,6 +241,22 @@ function crearEtapas(etapas, index, callback) {
         });
 
         crearEtapas(etapas, index + 1, callback);
+    });
+}
+
+// valida la jerarquia
+function validarJefe(etapa, idJefe, callback) {
+    if (Number(etapa.id_rol) !== 2) return callback(null);
+
+    Solicitud.obtenerPorId(etapa.id_solicitud, (err, solicitudes) => {
+        if (err || !solicitudes.length) return callback({ status: 500, mensaje: 'No se pudo consultar la solicitud' });
+
+        AuthService.esJefeDe(idJefe, solicitudes[0].id_empleado)
+            .then(esJefe => {
+                if (!esJefe) return callback({ status: 403, mensaje: 'Solo puede resolver solicitudes de su personal a cargo' });
+                callback(null);
+            })
+            .catch(() => callback({ status: 500, mensaje: 'Error al validar el jefe inmediato' }));
     });
 }
 

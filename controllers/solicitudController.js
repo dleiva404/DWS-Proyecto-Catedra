@@ -52,6 +52,7 @@ const resolverEtapa = (req, res) => {
         obtenerIdRol(req.usuario.rol),
         req.body.decision,
         req.body.comentario,
+        req.usuario.id_empleado,
         (error, resultado) => {
             if (error) {
                 return res.status(error.status || 500).json({
