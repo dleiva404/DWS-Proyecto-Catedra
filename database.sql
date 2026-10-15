@@ -3,8 +3,8 @@
 -- Sistema de Gestión de Solicitudes de Recursos Humanos
 -- Grupo Calma
 -- =====================================================
-
-CREATE DATABASE IF NOT EXISTS sistema_rrhh;
+DROP DATABASE IF EXISTS sistema_rrhh;
+CREATE DATABASE sistema_rrhh;
 
 USE sistema_rrhh;
 
