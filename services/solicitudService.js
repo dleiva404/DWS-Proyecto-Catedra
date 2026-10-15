@@ -44,7 +44,10 @@ const SolicitudService = {
         if (fin < inicio)
             return callback({ status: 400, mensaje: 'La fecha de fin no puede ser anterior a la fecha de inicio' });
 
-        const diasSolicitados = Math.floor((fin - inicio) / 86400000) + 1;
+        const diasSolicitados = contarDiasHabiles(inicio, fin);
+
+        if (diasSolicitados === 0)
+            return callback({ status: 400, mensaje: 'El rango no incluye días hábiles'});
 
         Solicitud.buscarTraslape(id_empleado, fecha_inicio, fecha_fin, (err, traslapes) => {
             if (err) return callback({ status: 500, mensaje: 'Error al verificar las fechas' });
@@ -260,6 +263,18 @@ function validarJefe(etapa, idJefe, callback) {
     });
 }
 
+// cuenta dias de lunes a sabado entre dos fechas (incluidas)
+function contarDiasHabiles(inicio, fin) {
+    let dias = 0;
+    const actual = new Date(inicio);
+
+    while (actual <= fin) {
+        if (actual.getUTCDay() !== 0) dias++;
+        actual.setUTCDate(actual.getUTCDate() + 1);
+    }
+    return dias;
+}
+
 function finalizarSolicitud(id_solicitud, callback) {
     Solicitud.obtenerPorId(id_solicitud, (err, solicitudes) => {
         if (err || !solicitudes.length)
@@ -276,7 +291,7 @@ function finalizarSolicitud(id_solicitud, callback) {
 
         const inicio = new Date(solicitud.fecha_inicio);
         const fin = new Date(solicitud.fecha_fin);
-        const dias = Math.floor((fin - inicio) / 86400000) + 1;
+        const dias = contarDiasHabiles(inicio, fin);
         const anio = inicio.getFullYear();
 
         SaldoVacaciones.obtenerPorEmpleadoAnio(
