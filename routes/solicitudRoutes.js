@@ -24,6 +24,7 @@ router.post(
 
 router.put(
     '/etapa/:id/resolver',
+    AuthMiddleware.verificarRol(ROLES.JEFE, ROLES.ANALISTA, ROLES.GERENTE),
     solicitudController.resolverEtapa
 );
 
