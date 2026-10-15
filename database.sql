@@ -116,6 +116,11 @@ CREATE TABLE etapa_solicitud (
     fecha_resolucion DATETIME NULL,
     decision VARCHAR(30) NULL,
     comentario VARCHAR(500) NULL,
+    id_usuario_responsable INT NULL,
+
+    CONSTRAINT fk_etapa_responsable
+        FOREIGN KEY (id_usuario_responsable)
+        REFERENCES usuario(id_usuario),
 
     CONSTRAINT fk_etapa_solicitud
         FOREIGN KEY (id_solicitud)
@@ -220,7 +225,9 @@ INSERT INTO empleado
 (id_usuario, id_supervisor, nombre, apellido, correo, cargo, fecha_ingreso, estado)
 VALUES
 (2, NULL, 'Carlos', 'Gomez', 'carlos.gomez@grupocalma.com', 'Jefe de Área', '2022-03-10', TRUE),
-(1, 1, 'Juan', 'Perez', 'juan.perez@grupocalma.com', 'Analista', '2024-01-15', TRUE);
+(1, 1, 'Juan', 'Perez', 'juan.perez@grupocalma.com', 'Analista', '2024-01-15', TRUE),
+(3, 1, 'Ana', 'Lopez', 'ana.lopez@grupocalma.com', 'Analista de Nómina', '2023-05-02', TRUE),
+(4, 1, 'Gabriela', 'Martinez', 'gabriela.martinez@grupocalma.com', 'Gerente de RRHH', '2021-08-16', TRUE);
 
 -- =====================================================
 -- DATOS DE PRUEBA: SALDOS DE VACACIONES
@@ -230,4 +237,6 @@ INSERT INTO saldo_vacaciones
 (id_empleado, anio, dias_asignados, dias_utilizados)
 VALUES
 (1, 2026, 15, 0),
-(2, 2026, 15, 0);
+(2, 2026, 15, 0),
+(3, 2026, 15, 0),
+(4, 2026, 15, 0);

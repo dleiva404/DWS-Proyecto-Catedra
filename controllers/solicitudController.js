@@ -26,6 +26,21 @@ const obtenerPendientes = (req, res) => {
     });
 };
 
+
+const obtenerTodas = (req, res) => {
+    SolicitudService.obtenerTodas((error, resultados) => {
+        if (error) return res.status(error.status || 500).json({ error: error.mensaje });
+        res.json(resultados);
+    });
+};
+
+const obtenerHistorial = (req, res) => {
+    SolicitudService.obtenerHistorial(req.params.id, req.usuario, (error, resultado) => {
+        if (error) return res.status(error.status || 500).json({ error: error.mensaje });
+        res.json(resultado);
+    });
+};
+
 const crearSolicitud = (req, res) => {
     SolicitudService.crearSolicitud(
         {
@@ -53,6 +68,7 @@ const resolverEtapa = (req, res) => {
         req.body.decision,
         req.body.comentario,
         req.usuario.id_empleado,
+        req.usuario.id_usuario,
         (error, resultado) => {
             if (error) {
                 return res.status(error.status || 500).json({
@@ -80,6 +96,8 @@ function obtenerIdRol(rol) {
 module.exports = {
     obtenerMisSolicitudes,
     obtenerPendientes,
+    obtenerTodas,
+    obtenerHistorial,
     crearSolicitud,
     resolverEtapa
 };

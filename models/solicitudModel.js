@@ -7,6 +7,40 @@ const Solicitud = {
         db.query(query, callback);
     },
 
+    contarAnalistasDisponibles: (callback) => {
+        const query = `
+            SELECT COUNT(*) AS disponibles
+            FROM usuario u
+            JOIN empleado e ON e.id_usuario = u.id_usuario
+            WHERE u.id_rol = 3
+              AND u.estado = TRUE
+              AND e.estado = TRUE
+              AND NOT EXISTS (
+                  SELECT 1 FROM solicitud s
+                  WHERE s.id_empleado = e.id_empleado
+                    AND s.estado = 'Aprobada'
+                    AND CURDATE() BETWEEN s.fecha_inicio AND s.fecha_fin
+              )
+        `;
+        db.query(query, callback);
+    },
+
+    obtenerTodasConDetalle: (callback) => {
+        const query = `
+            SELECT s.id_solicitud, ts.nombre AS tipo, s.fecha_solicitud,
+                   s.fecha_inicio, s.fecha_fin, s.estado,
+                   e.id_empleado, e.nombre, e.apellido,
+                   (SELECT es.nombre_etapa FROM etapa_solicitud es
+                    WHERE es.id_solicitud = s.id_solicitud AND es.estado = 'Pendiente'
+                    LIMIT 1) AS etapa_actual
+            FROM solicitud s
+            JOIN tipo_solicitud ts ON ts.id_tipo_solicitud = s.id_tipo_solicitud
+            JOIN empleado e ON e.id_empleado = s.id_empleado
+            ORDER BY s.fecha_solicitud DESC
+        `;
+        db.query(query, callback);
+    },
+
     obtenerPorId: (id, callback) => {
         const query = `
             SELECT *

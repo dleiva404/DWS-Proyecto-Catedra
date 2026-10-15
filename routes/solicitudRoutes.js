@@ -17,6 +17,17 @@ router.get(
     solicitudController.obtenerPendientes
     );
 
+router.get(
+    '/',
+    AuthMiddleware.verificarRol(ROLES.ASISTENTE, ROLES.ANALISTA, ROLES.GERENTE),
+    solicitudController.obtenerTodas
+);
+
+router.get(
+    '/:id/historial',
+    solicitudController.obtenerHistorial
+);
+
 router.post(
     '/',
     solicitudController.crearSolicitud
