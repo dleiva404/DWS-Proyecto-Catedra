@@ -13,6 +13,23 @@ const SolicitudService = {
         });
     },
 
+    // Etapas segun su rol
+    obtenerPendientes: (usuario, callback) => {
+        const rolesAprobadores = { 'Jefe inmediato': 2, 'Analista de Nómina': 3, 'Gerente': 4 };
+        const id_rol = rolesAprobadores[usuario.rol];
+
+        if (!id_rol) return callback({ status: 403, mensaje: 'Su rol no aprueba solicitudes' });
+
+        // el jefe solo ve las de su personal
+        const idJefe = id_rol === 2 ? usuario.id_empleado : null;
+        if (id_rol === 2 && !idJefe) return callback({ status: 400, mensaje: 'El jefe no tiene empleado asociado' });
+
+        EtapaSolicitud.obtenerPendientesPorRol(id_rol, idJefe, (err, resultados) => {
+            if (err) return callback({ status: 500, mensaje: 'Error al consultar las solicitudes pendientes' });
+            callback(null, resultados);
+        });
+    },
+
     validarVacaciones: (id_empleado, fecha_inicio, fecha_fin, callback) => {
         if (!id_empleado) return callback({ status: 400, mensaje: 'El empleado no está identificado' });
         if (!fecha_inicio || !fecha_fin) return callback({ status: 400, mensaje: 'La fecha de inicio y fin son obligatorias' });

@@ -14,6 +14,18 @@ const obtenerMisSolicitudes = (req, res) => {
     );
 };
 
+
+const obtenerPendientes = (req, res) => {
+    SolicitudService.obtenerPendientes(req.usuario, (error, resultados) => {
+        if (error) {
+            return res.status(error.status || 500).json({
+                error: error.mensaje
+            });
+        }
+        res.json(resultados);
+    });
+};
+
 const crearSolicitud = (req, res) => {
     SolicitudService.crearSolicitud(
         {
@@ -66,6 +78,7 @@ function obtenerIdRol(rol) {
 
 module.exports = {
     obtenerMisSolicitudes,
+    obtenerPendientes,
     crearSolicitud,
     resolverEtapa
 };
