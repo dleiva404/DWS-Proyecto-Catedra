@@ -1,47 +1,310 @@
-/* botones de accion de la tabla */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: #f8fafc;
+    color: #0f172a;
+}
+
+.header {
+    min-height: 80px;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    padding: 0 40px;
+    gap: 30px;
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.logo-area {
+    height: 80px;
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    width: 220px;
+    height: 60px;
+    object-fit: contain;
+    object-position: left center;
+}
+
+.nav {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.nav a {
+    color: #64748b;
+    text-decoration: none;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.nav a:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.nav a.activo {
+    background: #eff6ff;
+    color: #2563eb;
+    font-weight: 600;
+}
+
+.usuario-area {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border-left: 1px solid #e2e8f0;
+    padding-left: 20px;
+    margin-left: 10px;
+}
+
+.usuario-area span {
+    font-size: 16px;
+    color: #94a3b8;
+}
+
+.usuario-area strong {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.usuario-area button {
+    border: 1px solid #fecaca;
+    background: transparent;
+    color: #ef4444;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s ease;
+}
+
+.usuario-area button:hover {
+    background: #fef2f2;
+    border-color: #ef4444;
+}
+
+.contenido {
+    padding: 40px 50px;
+}
+
+.titulo {
+    margin-bottom: 30px;
+}
+
+.titulo h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+    color: #0f172a;
+}
+
+.titulo p {
+    color: #64748b;
+    font-size: 15px;
+}
+
+.panel {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    padding: 30px;
+    position: relative;
+    overflow: hidden;
+}
+
+.panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #1e293b, #3b82f6);
+}
+
+.panel h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.tabla-contenedor {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+thead {
+    background: #f8fafc;
+}
+
+th {
+    padding: 14px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e2e8f0;
+    text-align: center;
+}
+
+td {
+    padding: 16px;
+    font-size: 14px;
+    color: #334155;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+    text-align: center;
+}
+
+tbody tr {
+    transition: background 0.2s ease;
+}
+
+tbody tr:hover {
+    background: #f8fafc;
+}
+
+td[colspan] {
+    padding: 40px;
+    color: #94a3b8;
+    font-style: italic;
+    font-size: 14px;
+    background: #fafafa;
+    border-radius: 8px;
+}
+
+td:nth-child(2) {
+    font-weight: 600;
+    color: #0f172a;
+}
+
+td:nth-child(3) {
+    font-weight: 500;
+    color: #3b82f6;
+}
+
+td:nth-child(5),
+td:nth-child(6) {
+    color: #64748b;
+    font-size: 13px;
+}
+
 .acciones {
     display: flex;
-    gap: 6px;
-    justify-content: center
+    gap: 8px;
+    justify-content: center;
 }
 
 .btn-aprobar,
 .btn-rechazar {
     border: 0;
-    color: #fff;
-    padding: 7px 12px;
-    border-radius: 4px;
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 12px
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
 }
 
 .btn-aprobar {
-    background: #35c45a
+    background: #10b981;
 }
 
-.btn-aprobar:hover {
-    background: #2ba64b
+.btn-aprobar:hover:not(:disabled) {
+    background: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
 }
 
 .btn-rechazar {
-    background: #ff3b40
+    background: #ef4444;
 }
 
-.btn-rechazar:hover {
-    background: #e02e33
+.btn-rechazar:hover:not(:disabled) {
+    background: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(239, 68, 68, 0.2);
 }
 
-.btn-aprobar:disabled {
-    opacity: .5;
-    cursor: wait
+.btn-aprobar:active:not(:disabled),
+.btn-rechazar:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: none;
 }
 
-/* boton grande del modal de rechazo */
+.btn-aprobar:disabled,
+.btn-rechazar:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(20%);
+}
+
 .btn-enviar.btn-rechazar {
-    padding: 12px 20px;
-    font-size: 14px
+    width: 100%;
+    margin-top: 15px;
+    padding: 14px 24px;
+    font-size: 15px;
+    border-radius: 10px;
+    letter-spacing: 0.3px;
 }
 
 #mensajeGeneral {
-    margin-bottom: 15px
+    margin-bottom: 16px;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    border-radius: 8px;
+}
+
+@media(max-width: 900px) {
+    .header {
+        flex-wrap: wrap;
+        padding: 15px 20px;
+        min-height: auto;
+    }
+    .nav {
+        width: 100%;
+        margin-top: 10px;
+        overflow-x: auto;
+        padding-bottom: 5px;
+    }
+    .usuario-area {
+        margin-left: auto;
+        border-left: none;
+    }
+    .contenido {
+        padding: 20px;
+    }
 }
