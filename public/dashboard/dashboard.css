@@ -140,6 +140,29 @@ body {
     transform: translateY(-2px)
 }
 
+/* opcion planeada para una fase futura */
+.solicitud-card.proximamente {
+    position: relative;
+    opacity: .55;
+    cursor: not-allowed
+}
+
+.solicitud-card.proximamente:hover {
+    background: #edf6fc;
+    transform: none
+}
+
+.etiqueta-proximamente {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 11px;
+    background: #6b7280;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 10px
+}
+
 .icono {
     font-size: 34px;
     flex-shrink: 0

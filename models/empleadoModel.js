@@ -63,7 +63,7 @@ const Empleado = {
 
     // Eliminar un empleado
     eliminar: (id, callback) => {
-        const query = 'DELETE FROM empleado WHERE id_empleado = ?';
+        const query = 'UPDATE empleado SET estado = FALSE WHERE id_empleado = ?';
         db.query(query, [id], callback);
     }
 };

@@ -12,7 +12,7 @@ const ROLES = {
 
 class AuthMiddleware {
     // valida token
-    static verificarToken(req, res, next) {
+    static async verificarToken(req, res, next) {
         const header = req.headers.authorization;
 
         if (!header || !header.startsWith('Bearer ')) {
@@ -25,13 +25,25 @@ class AuthMiddleware {
             return res.status(401).json({ error: 'La sesión fue cerrada, inicie sesión de nuevo' });
         }
 
+        let datos;
         try {
-            req.usuario = jwt.verify(token, process.env.JWT_SECRET);
-            req.token = token;
-            next();
+            datos = jwt.verify(token, process.env.JWT_SECRET);
         } catch (err) {
             return res.status(401).json({ error: 'Sesión inválida o expirada' });
         }
+
+        try {
+            const activo = await AuthService.estaActivo(datos.id_usuario);
+            if (!activo) {
+                return res.status(401).json({ error: 'La cuenta está desactivada' });
+            }
+        } catch (err) {
+            return res.status(500).json({ error: 'Error al validar la sesión' });
+        }
+
+        req.usuario = datos;
+        req.token = token;
+        next();
     }
 
     // restringe el acceso segun rol

@@ -35,7 +35,7 @@ const Usuario = {
             UPDATE usuario
             SET id_rol = ?,
                 usuario = ?,
-                contrasena_hash = ?,
+                contrasena_hash = COALESCE(?, contrasena_hash),
                 estado = ?
             WHERE id_usuario = ?
         `;

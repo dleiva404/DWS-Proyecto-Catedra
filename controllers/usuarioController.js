@@ -94,7 +94,7 @@ const actualizarUsuario = (req, res) => {
         estado
     } = req.body;
 
-    if (!id_rol || !usuario || !contrasena) {
+    if (!id_rol || !usuario) {
         return res.status(400).json({
             error: 'Faltan campos obligatorios'
         });
@@ -103,7 +103,7 @@ const actualizarUsuario = (req, res) => {
     const usuarioActualizado = {
         id_rol,
         usuario,
-        contrasena_hash: bcrypt.hashSync(contrasena, 10),
+        contrasena_hash: contrasena ? bcrypt.hashSync(contrasena, 10) : null,
         estado: estado === undefined ? true : estado
     };
 

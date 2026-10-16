@@ -29,6 +29,11 @@ class AuthService {
         return AuthModel.esJefeDe(idJefe, idEmpleado);
     }
 
+    // la cuenta pudo desactivarse despues del login
+    static async estaActivo(id_usuario) {
+        return AuthModel.estaActivo(id_usuario);
+    }
+
     static async login(usuario, contrasena) {
         if (!usuario || !contrasena) {
             throw new HttpError('Usuario y/o contraseña no ingresados', 400);

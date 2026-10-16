@@ -22,6 +22,14 @@ class AuthModel {
         );
         return rows.length > 0;
     }
+    // true si la cuenta sigue activa
+    static async estaActivo(id_usuario) {
+        const [rows] = await db.promise().query(
+            'SELECT estado FROM usuario WHERE id_usuario = ?',
+            [id_usuario]
+        );
+        return rows.length > 0 && !!rows[0].estado;
+    }
 }
 
 module.exports = AuthModel;
