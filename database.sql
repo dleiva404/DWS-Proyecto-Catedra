@@ -3,6 +3,7 @@
 -- Sistema de Gestión de Solicitudes de Recursos Humanos
 -- Grupo Calma
 -- =====================================================
+SET NAMES utf8mb4;
 DROP DATABASE IF EXISTS sistema_rrhh;
 CREATE DATABASE sistema_rrhh;
 

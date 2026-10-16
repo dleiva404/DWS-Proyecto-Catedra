@@ -5,6 +5,10 @@ if (!token) window.location.href = '/login/index.html';
 
 document.getElementById('nombreUsuario').textContent = usuario.nombre || usuario.usuario || 'Usuario';
 
+if (['Jefe inmediato', 'Analista de Nómina', 'Gerente'].includes(usuario.rol)) {
+    document.getElementById('navAprobaciones').style.display = '';
+}
+
 const modal = document.getElementById('modal');
 const tipo = document.getElementById('tipo');
 const form = document.getElementById('formSolicitud');
@@ -45,10 +49,12 @@ function cerrarModal() {
 function actualizarFormulario() {
     const valor = tipo.value;
 
-    fechas.style.display = valor === '1' ? 'grid' : 'none';
+    const llevaFechas = valor === '1' || valor === '2';
 
-    fechaInicio.required = valor === '1';
-    fechaFin.required = valor === '1';
+    fechas.style.display = llevaFechas ? 'grid' : 'none';
+
+    fechaInicio.required = llevaFechas;
+    fechaFin.required = llevaFechas;
 
     motivo.required = valor === '2' || valor === '4';
 
@@ -141,6 +147,11 @@ async function cargarSolicitudes() {
             return;
         }
 
+        if (respuesta.status === 400) {
+            document.getElementById('tablaSolicitudes').innerHTML = '<tr><td colspan="7">Tu usuario no está registrado como empleado, por eso no tiene solicitudes propias.</td></tr>';
+            return;
+        }
+
         if (!respuesta.ok) throw new Error();
 
         const solicitudes = await respuesta.json();
@@ -168,7 +179,7 @@ async function cargarSolicitudes() {
                     <td>${formatearFecha(s.fecha_solicitud)}</td>
                     <td>${formatearFecha(s.fecha_inicio)}</td>
                     <td>${formatearFecha(s.fecha_fin)}</td>
-                    <td>${s.motivo || '-'}</td>
+                    <td>${s.motivo ? escaparHTML(s.motivo) : '-'}</td>
                     <td><span class="estado estado-${estado}">${s.estado}</span></td>
                 </tr>`;
         }).join('');
@@ -183,7 +194,16 @@ function formatearFecha(fecha) {
     return new Date(fecha).toLocaleDateString('es-SV');
 }
 
-document.getElementById('cerrarSesion').addEventListener('click', () => {
+document.getElementById('cerrarSesion').addEventListener('click', async () => {
+
+    try {
+        await fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` }
+        });
+    } catch (e) {
+    }
+
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
     window.location.href = '/login/index.html';
@@ -204,6 +224,15 @@ if (tipoUrl) {
 
     tipo.value = tipos[tipoUrl] || '';
     actualizarFormulario();
+}
+
+function escaparHTML(texto) {
+    return String(texto)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 actualizarFormulario();

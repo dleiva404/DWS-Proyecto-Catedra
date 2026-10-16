@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Grupo Calma - Aprobaciones</title>
+    <link rel="stylesheet" href="../solicitudes/solicitudes.css">
+    <link rel="stylesheet" href="aprobaciones.css">
+</head>
+
+<body>
+
+    <header class="header">
+        <div class="logo-area">
+            <img src="../assets/Logo.jpeg" alt="Invercalma - Grupo Calma" class="logo">
+        </div>
+
+        <nav class="nav">
+            <a href="/dashboard/dashboard.html">Dashboard</a>
+            <a href="/solicitudes/solicitudes.html">Mis Solicitudes</a>
+            <a href="/aprobaciones/aprobaciones.html" class="activo">Aprobaciones</a>
+        </nav>
+
+        <div class="usuario-area">
+            <span>♙</span>
+            <strong id="nombreUsuario">Usuario</strong>
+            <button id="cerrarSesion">Salir</button>
+        </div>
+    </header>
+
+    <main class="contenido">
+
+        <div class="titulo">
+            <div>
+                <h1>Aprobaciones pendientes</h1>
+                <p id="descripcionRol">Solicitudes que requieren tu revisión.</p>
+            </div>
+        </div>
+
+        <div id="mensajeGeneral" class="mensaje"></div>
+
+        <section class="panel">
+            <h2>Por resolver</h2>
+
+            <div class="tabla-contenedor">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Empleado</th>
+                            <th>Tipo</th>
+                            <th>Etapa</th>
+                            <th>Inicio</th>
+                            <th>Fin</th>
+                            <th>Motivo</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tablaPendientes">
+                        <tr>
+                            <td colspan="8">Cargando...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="modalRechazo" class="modal oculto">
+        <div class="modal-contenido">
+            <button id="cerrarModal" class="cerrar">×</button>
+
+            <h2>Rechazar solicitud</h2>
+            <p class="subtitulo">El motivo es obligatorio y quedará en el historial de la solicitud.</p>
+
+            <form id="formRechazo">
+                <label for="comentario">Motivo del rechazo</label>
+                <textarea id="comentario" maxlength="500" required placeholder="Explica por qué se rechaza..."></textarea>
+
+                <div id="mensajeModal" class="mensaje"></div>
+
+                <button type="submit" class="btn-enviar btn-rechazar">Confirmar rechazo</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="aprobaciones.js"></script>
+</body>
+
+</html>

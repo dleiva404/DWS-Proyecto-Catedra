@@ -83,6 +83,11 @@ const SolicitudService = {
         if (fin < inicio)
             return callback({ status: 400, mensaje: 'La fecha de fin no puede ser anterior a la fecha de inicio' });
 
+        // no se permiten vacaciones en fechas pasadas
+        const hoy = new Date().toLocaleDateString('en-CA');
+        if (String(fecha_inicio).slice(0, 10) < hoy)
+            return callback({ status: 400, mensaje: 'La fecha de inicio no puede ser anterior a hoy' });
+
         const diasSolicitados = contarDiasHabiles(inicio, fin);
 
         if (diasSolicitados === 0)
@@ -94,24 +99,35 @@ const SolicitudService = {
             if (traslapes.length)
                 return callback({ status: 400, mensaje: 'Ya existe una solicitud de vacaciones en ese rango' });
 
-            const anio = inicio.getFullYear();
+            const anio = inicio.getUTCFullYear();
 
             SaldoVacaciones.obtenerDiasDisponibles(id_empleado, anio, (err, saldos) => {
                 if (err) return callback({ status: 500, mensaje: 'Error al consultar el saldo de vacaciones' });
                 if (!saldos.length) return callback({ status: 400, mensaje: 'No existe saldo de vacaciones para ese año' });
 
-                const saldo = saldos[0];
+                                const saldo = saldos[0];
 
-                if (diasSolicitados > saldo.dias_disponibles)
+                Solicitud.obtenerVacacionesPendientes(id_empleado, (err, pendientes) => {
+                if (err) return callback({ status: 500, mensaje: 'Error al consultar las solicitudes pendientes' });
+
+                    // dias ya comprometidos en solicitudes que aun no se aprueban
+                    const comprometidos = pendientes
+                        .filter(p => new Date(p.fecha_inicio).getFullYear() === anio)
+                        .reduce((total, p) => total + contarDiasHabiles(new Date(p.fecha_inicio), new Date(p.fecha_fin)), 0);
+
+                    const disponibles = saldo.dias_disponibles - comprometidos;
+
+                if (diasSolicitados > disponibles)
                     return callback({
-                        status: 400,
-                        mensaje: `No tiene suficientes días. Disponibles: ${saldo.dias_disponibles}`
-                    });
+                         status: 400,
+                         mensaje: `No tiene suficientes días. Disponibles: ${disponibles} (${comprometidos} en solicitudes pendientes)`
+                        });
 
-                callback(null, {
-                    diasSolicitados,
-                    diasDisponibles: saldo.dias_disponibles,
-                    anio
+                    callback(null, {
+                        diasSolicitados,
+                        diasDisponibles: disponibles,
+                        anio
+                    });
                 });
             });
         });
@@ -125,6 +141,11 @@ const SolicitudService = {
 
         if (![1, 2].includes(Number(id_tipo_solicitud)))
             return callback({ status: 400, mensaje: 'Tipo de solicitud no válido' });
+
+        // datos de quien solicita, para armar sus etapas
+        Solicitud.obtenerSolicitante(id_empleado, (err, filas) => {
+        if (err || !filas.length) return callback({ status: 500, mensaje: 'No se pudo consultar al solicitante' });
+        const solicitante = filas[0];
 
         if (Number(id_tipo_solicitud) === 1) {
             return SolicitudService.validarVacaciones(
@@ -144,11 +165,7 @@ const SolicitudService = {
 
                         const id = resultado.insertId;
 
-                        const etapas = [
-                            { id_solicitud: id, id_rol: 3, nombre_etapa: 'Analista de Nómina', orden: 1, estado: 'Pendiente', fecha_inicio: new Date(), fecha_resolucion: null, decision: null, comentario: null },
-                            { id_solicitud: id, id_rol: 4, nombre_etapa: 'Gerente', orden: 2, estado: 'Bloqueada', fecha_inicio: null, fecha_resolucion: null, decision: null, comentario: null },
-                            { id_solicitud: id, id_rol: 2, nombre_etapa: 'Jefe inmediato', orden: 3, estado: 'Bloqueada', fecha_inicio: null, fecha_resolucion: null, decision: null, comentario: null }
-                        ];
+                        const etapas = armarEtapas(1, solicitante, id);
 
                         crearEtapas(etapas, 0, errorEtapas => {
                             if (errorEtapas) return callback(errorEtapas);
@@ -165,8 +182,17 @@ const SolicitudService = {
             );
         }
 
-        if (!motivo || !motivo.trim())
+        if (typeof motivo !== 'string' || !motivo.trim())
             return callback({ status: 400, mensaje: 'El motivo es obligatorio para un permiso' });
+
+        if (!fecha_inicio || !fecha_fin)
+            return callback({ status: 400, mensaje: 'La fecha de inicio y fin son obligatorias' });
+
+        if ((fecha_inicio && isNaN(new Date(fecha_inicio))) || (fecha_fin && isNaN(new Date(fecha_fin))))
+            return callback({ status: 400, mensaje: 'Las fechas no son válidas' });
+
+        if (fecha_inicio && fecha_fin && new Date(fecha_fin) < new Date(fecha_inicio))
+            return callback({ status: 400, mensaje: 'La fecha de fin no puede ser anterior a la fecha de inicio' });
 
         Solicitud.crear({
             id_empleado,
@@ -180,10 +206,7 @@ const SolicitudService = {
 
             const id = resultado.insertId;
 
-            const etapas = [
-                { id_solicitud: id, id_rol: 2, nombre_etapa: 'Jefe inmediato', orden: 1, estado: 'Pendiente', fecha_inicio: new Date(), fecha_resolucion: null, decision: null, comentario: null },
-                { id_solicitud: id, id_rol: 3, nombre_etapa: 'Analista de Nómina', orden: 2, estado: 'Bloqueada', fecha_inicio: null, fecha_resolucion: null, decision: null, comentario: null }
-            ];
+            const etapas = armarEtapas(2, solicitante, id);
 
             crearEtapas(etapas, 0, errorEtapas => {
                 if (errorEtapas) return callback(errorEtapas);
@@ -194,6 +217,7 @@ const SolicitudService = {
                 });
             });
         });
+        });
     },
 
     resolverEtapa: (id_etapa, rol, decision, comentario, id_empleado, id_usuario, callback) => {
@@ -202,7 +226,7 @@ const SolicitudService = {
         if (!['Aprobada', 'Rechazada'].includes(decision))
             return callback({ status: 400, mensaje: 'La decisión debe ser Aprobada o Rechazada' });
 
-        if (decision === 'Rechazada' && (!comentario || !comentario.trim()))
+        if (decision === 'Rechazada' && (typeof comentario !== 'string' || !comentario.trim()))
             return callback({ status: 400, mensaje: 'El motivo del rechazo es obligatorio' });
 
         EtapaSolicitud.obtenerPorId(id_etapa, (err, etapas) => {
@@ -214,7 +238,7 @@ const SolicitudService = {
             if (etapa.estado !== 'Pendiente')
                 return callback({ status: 400, mensaje: 'Esta etapa no está disponible para ser resuelta' });
 
-            validarRol(etapa, rol, errRol => {
+            validarRol(etapa, rol, id_empleado, errRol => {
             if (errRol) return callback(errRol);
 
             validarJefe(etapa, id_empleado, errJefe => {
@@ -275,6 +299,44 @@ const SolicitudService = {
     }
 };
 
+function armarEtapas(id_tipo, solicitante, id_solicitud) {
+    const esAnalista = solicitante.rol === 'Analista de Nómina';
+    const esGerente = solicitante.rol === 'Gerente';
+    const tieneJefe = !!solicitante.id_supervisor;
+
+    let pasos;
+
+    if (id_tipo === 1) {
+        // vacaciones: Analista -> Gerente -> Jefe
+        pasos = [
+            esAnalista ? null : { id_rol: 3, nombre_etapa: 'Analista de Nómina' },
+            esGerente ? null : { id_rol: 4, nombre_etapa: 'Gerente' },
+            tieneJefe ? { id_rol: 2, nombre_etapa: 'Jefe inmediato' } : null
+        ];
+    } else {
+        // permiso: Jefe -> Analista (si la solicitante es la analista, revisa la gerente)
+        pasos = [
+            tieneJefe ? { id_rol: 2, nombre_etapa: 'Jefe inmediato' } : null,
+            esAnalista
+                ? { id_rol: 4, nombre_etapa: 'Gerente (revisión final)' }
+                : { id_rol: 3, nombre_etapa: 'Analista de Nómina' }
+        ];
+    }
+
+    // quita las omitidas y numera en orden
+    return pasos.filter(p => p).map((p, i) => ({
+        id_solicitud,
+        id_rol: p.id_rol,
+        nombre_etapa: p.nombre_etapa,
+        orden: i + 1,
+        estado: i === 0 ? 'Pendiente' : 'Bloqueada',
+        fecha_inicio: i === 0 ? new Date() : null,
+        fecha_resolucion: null,
+        decision: null,
+        comentario: null
+    }));
+}
+
 function crearEtapas(etapas, index, callback) {
     if (index >= etapas.length) return callback(null);
 
@@ -288,17 +350,22 @@ function crearEtapas(etapas, index, callback) {
     });
 }
 
-// valida el rol; el gerente sustituye a la analista solo en permisos y si no hay analista disponible (regla 5)
-function validarRol(etapa, rol, callback) {
-    if (Number(rol) === Number(etapa.id_rol)) return callback(null);
-
-    const esRespaldo = Number(rol) === 4 && Number(etapa.id_rol) === 3;
-    if (!esRespaldo) return callback({ status: 403, mensaje: 'No tiene permisos para resolver esta etapa' });
-
+// nadie resuelve lo suyo; el gerente sustituye a la analista en permisos si no hay analista disponible (regla 5)
+function validarRol(etapa, rol, id_empleado, callback) {
     Solicitud.obtenerPorId(etapa.id_solicitud, (err, solicitudes) => {
         if (err || !solicitudes.length) return callback({ status: 500, mensaje: 'No se pudo consultar la solicitud' });
 
-        if (Number(solicitudes[0].id_tipo_solicitud) !== 2)
+        const solicitud = solicitudes[0];
+
+        if (Number(solicitud.id_empleado) === Number(id_empleado))
+            return callback({ status: 403, mensaje: 'No puede resolver su propia solicitud' });
+
+        if (Number(rol) === Number(etapa.id_rol)) return callback(null);
+
+        const esRespaldo = Number(rol) === 4 && Number(etapa.id_rol) === 3;
+        if (!esRespaldo) return callback({ status: 403, mensaje: 'No tiene permisos para resolver esta etapa' });
+
+        if (Number(solicitud.id_tipo_solicitud) !== 2)
             return callback({ status: 403, mensaje: 'El Gerente solo puede sustituir a la Analista en permisos' });
 
         Solicitud.contarAnalistasDisponibles((err, filas) => {
@@ -370,7 +437,8 @@ function finalizarSolicitud(id_solicitud, callback) {
                 const nuevosDias = saldo.dias_utilizados + dias;
 
                 if (nuevosDias > saldo.dias_asignados)
-                    return callback({ status: 400, mensaje: 'El saldo de vacaciones es insuficiente' });
+                    return Solicitud.actualizarEstado(id_solicitud, 'Rechazada', () =>
+                        callback({ status: 400, mensaje: 'Saldo insuficiente: la solicitud fue rechazada automáticamente' }));
 
                 SaldoVacaciones.actualizar(
                     saldo.id_saldo,

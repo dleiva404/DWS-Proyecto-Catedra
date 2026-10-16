@@ -6,6 +6,11 @@ if (!token) window.location.href = '/login/index.html';
 const nombre = usuario.nombre || usuario.usuario || 'Usuario';
 
 document.getElementById('nombreUsuario').textContent = nombre;
+
+if (['Jefe inmediato', 'Analista de Nómina', 'Gerente'].includes(usuario.rol)) {
+    document.getElementById('navAprobaciones').style.display = '';
+}
+
 document.getElementById('nombreBienvenida').textContent = nombre;
 
 async function cargarSolicitudes() {
@@ -18,6 +23,11 @@ async function cargarSolicitudes() {
             localStorage.removeItem('token');
             localStorage.removeItem('usuario');
             window.location.href = '/login/index.html';
+            return;
+        }
+
+        if (respuesta.status === 400) {
+            document.getElementById('tablaSolicitudes').innerHTML = '<tr><td colspan="4">Tu usuario no está registrado como empleado, por eso no tiene solicitudes propias.</td></tr>';
             return;
         }
 
@@ -59,7 +69,16 @@ function formatearFecha(fecha) {
     return new Date(fecha).toLocaleDateString('es-SV');
 }
 
-document.getElementById('cerrarSesion').addEventListener('click', () => {
+document.getElementById('cerrarSesion').addEventListener('click', async () => {
+
+    try {
+        await fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` }
+        });
+    } catch (e) {
+    }
+
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
     window.location.href = '/login/index.html';

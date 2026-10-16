@@ -7,6 +7,28 @@ const Solicitud = {
         db.query(query, callback);
     },
 
+    obtenerSolicitante: (id_empleado, callback) => {
+        const query = `
+            SELECT e.id_empleado, e.id_supervisor, r.nombre AS rol
+            FROM empleado e
+            JOIN usuario u ON u.id_usuario = e.id_usuario
+            JOIN rol r ON r.id_rol = u.id_rol
+            WHERE e.id_empleado = ?
+        `;
+        db.query(query, [id_empleado], callback);
+    },
+
+    obtenerVacacionesPendientes: (id_empleado, callback) => {
+        const query = `
+            SELECT fecha_inicio, fecha_fin
+            FROM solicitud
+            WHERE id_empleado = ?
+              AND id_tipo_solicitud = 1
+              AND estado = 'Pendiente'
+        `;
+        db.query(query, [id_empleado], callback);
+    },
+
     contarAnalistasDisponibles: (callback) => {
         const query = `
             SELECT COUNT(*) AS disponibles

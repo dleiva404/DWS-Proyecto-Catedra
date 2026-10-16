@@ -1,5 +1,20 @@
 const Empleado = require('../models/empleadoModel');
 
+function validarDatosEmpleado(datos, idEmpleado) {
+    const formatoCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!formatoCorreo.test(datos.correo))
+        return 'El correo no tiene un formato válido';
+
+    if (isNaN(new Date(datos.fecha_ingreso)))
+        return 'La fecha de ingreso no es válida';
+
+    if (idEmpleado && datos.id_supervisor && Number(datos.id_supervisor) === Number(idEmpleado))
+        return 'Un empleado no puede ser su propio supervisor';
+
+    return null;
+}
+
 // Listar todos los empleados
 const listarEmpleados = (req, res) => {
     Empleado.obtenerTodos((err, resultados) => {
@@ -55,6 +70,9 @@ const crearEmpleado = (req, res) => {
         });
     }
 
+    const errorDatos = validarDatosEmpleado(req.body);
+    if (errorDatos) return res.status(400).json({ error: errorDatos });
+
     const nuevoEmpleado = {
         id_usuario,
         id_supervisor: id_supervisor || null,
@@ -69,6 +87,13 @@ const crearEmpleado = (req, res) => {
     Empleado.crear(nuevoEmpleado, (err, resultado) => {
         if (err) {
             console.error('Error al crear empleado:', err);
+
+            // el usuario o el supervisor indicado no existe
+            if (err.code === 'ER_NO_REFERENCED_ROW_2') {
+                return res.status(400).json({
+                    error: 'El usuario o el supervisor indicado no existe'
+                });
+            }
 
             if (err.code === 'ER_DUP_ENTRY') {
                 return res.status(400).json({
@@ -109,6 +134,9 @@ const actualizarEmpleado = (req, res) => {
         });
     }
 
+    const errorDatos = validarDatosEmpleado(req.body, id);
+    if (errorDatos) return res.status(400).json({ error: errorDatos });
+
     const empleadoActualizado = {
         id_usuario,
         id_supervisor: id_supervisor || null,
@@ -123,6 +151,12 @@ const actualizarEmpleado = (req, res) => {
     Empleado.actualizar(id, empleadoActualizado, (err, resultado) => {
         if (err) {
             console.error('Error al actualizar empleado:', err);
+
+            if (err.code === 'ER_NO_REFERENCED_ROW_2') {
+                return res.status(400).json({
+                    error: 'El usuario o el supervisor indicado no existe'
+                });
+            }
 
             if (err.code === 'ER_DUP_ENTRY') {
                 return res.status(400).json({
@@ -167,7 +201,7 @@ const eliminarEmpleado = (req, res) => {
         }
 
         res.json({
-            mensaje: 'Empleado eliminado exitosamente'
+        mensaje: 'Empleado desactivado exitosamente'
         });
     });
 };

@@ -1,0 +1,47 @@
+/* botones de accion de la tabla */
+.acciones {
+    display: flex;
+    gap: 6px;
+    justify-content: center
+}
+
+.btn-aprobar,
+.btn-rechazar {
+    border: 0;
+    color: #fff;
+    padding: 7px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px
+}
+
+.btn-aprobar {
+    background: #35c45a
+}
+
+.btn-aprobar:hover {
+    background: #2ba64b
+}
+
+.btn-rechazar {
+    background: #ff3b40
+}
+
+.btn-rechazar:hover {
+    background: #e02e33
+}
+
+.btn-aprobar:disabled {
+    opacity: .5;
+    cursor: wait
+}
+
+/* boton grande del modal de rechazo */
+.btn-enviar.btn-rechazar {
+    padding: 12px 20px;
+    font-size: 14px
+}
+
+#mensajeGeneral {
+    margin-bottom: 15px
+}
