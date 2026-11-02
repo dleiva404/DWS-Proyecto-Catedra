@@ -18,7 +18,7 @@ body {
     padding: 0 40px;
     gap: 30px;
     border-bottom: 1px solid #e2e8f0;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .logo-area {
@@ -50,7 +50,7 @@ body {
     border: 1px solid #cbd5e1;
     border-radius: 8px;
     background-color: #ffffff;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
     transition: all 0.2s ease;
 }
 
@@ -59,7 +59,7 @@ body {
     border-color: #94a3b8;
     color: #0f172a;
     transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
 .nav a.activo {
@@ -138,7 +138,7 @@ body {
     background: #fff;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
     padding: 25px;
     min-height: 390px;
 }
@@ -233,9 +233,17 @@ body {
     font-weight: 500;
 }
 
-.pendiente { background: #f59e0b; }
-.aprobada { background: #10b981; }
-.rechazada { background: #ef4444; }
+.pendiente {
+    background: #f59e0b;
+}
+
+.aprobada {
+    background: #10b981;
+}
+
+.rechazada {
+    background: #ef4444;
+}
 
 table {
     width: 100%;
@@ -273,9 +281,17 @@ td {
     font-weight: 600;
 }
 
-.estado-pendiente { background: #f59e0b; }
-.estado-aprobada { background: #10b981; }
-.estado-rechazada { background: #ef4444; }
+.estado-pendiente {
+    background: #f59e0b;
+}
+
+.estado-aprobada {
+    background: #10b981;
+}
+
+.estado-rechazada {
+    background: #ef4444;
+}
 
 .ver-todas {
     display: block;
@@ -295,6 +311,7 @@ td {
     .dashboard-grid {
         grid-template-columns: 1fr;
     }
+
     .panel {
         min-height: auto;
     }
@@ -305,25 +322,31 @@ td {
         flex-wrap: wrap;
         padding: 15px 20px;
     }
+
     .logo-area {
         width: 100%;
         height: 70px;
     }
+
     .logo {
         width: 240px;
         height: 65px;
     }
+
     .nav {
         margin-left: 0;
         width: 100%;
         overflow-x: auto;
     }
+
     .usuario-area {
         margin-left: 0;
     }
+
     .contenido {
         padding: 30px 20px;
     }
+
     .solicitudes-grid,
     .estadisticas {
         grid-template-columns: 1fr;

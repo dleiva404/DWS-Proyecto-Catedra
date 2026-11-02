@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grupo Calma - Gestión de usuarios</title>
+    <link rel="stylesheet" href="usuarios.css">
+</head>
+
+<body>
+
+    <header class="header">
+        <div class="logo-area">
+            <img src="../assets/logo.png" alt="Invercalma - Grupo Calma" class="logo">
+        </div>
+
+        <nav class="nav">
+            <a href="/dashboard/dashboard.html">Dashboard</a>
+            <a href="/solicitudes/solicitudes.html">Mis Solicitudes</a>
+            <a href="/usuarios/usuarios.html" class="activo">Gestión de usuarios</a>
+        </nav>
+
+        <div class="usuario-area">
+            <span>♙</span>
+            <strong id="nombreUsuario">Administrador</strong>
+            <button id="cerrarSesion" type="button">Salir</button>
+        </div>
+    </header>
+
+    <main class="contenido">
+
+        <section class="encabezado-pagina">
+            <div>
+                <h1>Gestión de usuarios</h1>
+                <p>Administra las cuentas, los roles y el estado de los usuarios del sistema.</p>
+            </div>
+
+            <button id="btnNuevoUsuario" class="btn btn-principal" type="button">
+                + Nuevo usuario
+            </button>
+        </section>
+
+        <section class="panel">
+
+            <div class="barra-herramientas">
+                <div class="buscador">
+                    <label for="buscarUsuario">Buscar usuario</label>
+                    <input type="search" id="buscarUsuario" placeholder="Escribe un nombre de usuario..."
+                        autocomplete="off">
+                </div>
+
+                <div class="contador">
+                    Usuarios encontrados: <strong id="totalUsuarios">0</strong>
+                </div>
+            </div>
+
+            <div id="mensaje" class="mensaje" role="status" aria-live="polite"></div>
+
+            <div class="tabla-contenedor">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tablaUsuarios">
+                        <tr>
+                            <td colspan="4" class="texto-vacio">
+                                Cargando usuarios...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+
+    </main>
+
+    <div id="modalUsuario" class="modal" hidden>
+        <div class="modal-contenido" role="dialog" aria-modal="true" aria-labelledby="tituloModal">
+
+            <div class="modal-encabezado">
+                <h2 id="tituloModal">Nuevo usuario</h2>
+                <button id="btnCerrarModal" class="btn-cerrar" type="button"
+                    aria-label="Cerrar formulario">&times;</button>
+            </div>
+
+            <form id="formUsuario">
+                <input type="hidden" id="idUsuario">
+
+                <div class="campo">
+                    <label for="usuario">Nombre de usuario *</label>
+                    <input type="text" id="usuario" maxlength="100" required autocomplete="username"
+                        placeholder="Ej. jperez">
+                </div>
+
+                <div class="campo">
+                    <label for="contrasena">
+                        Contraseña <span id="indicadorContrasena">*</span>
+                    </label>
+                    <input type="password" id="contrasena" autocomplete="new-password"
+                        placeholder="Ingresa la contraseña">
+                    <small id="ayudaContrasena">
+                        Obligatoria para crear un usuario.
+                    </small>
+                </div>
+
+                <div class="campo">
+                    <label for="idRol">Rol *</label>
+                    <select id="idRol" required>
+                        <option value="">Cargando roles...</option>
+                    </select>
+                </div>
+
+                <div id="mensajeFormulario" class="mensaje" role="alert" aria-live="polite"></div>
+
+                <div class="acciones-formulario">
+                    <button id="btnCancelar" class="btn btn-secundario" type="button">Cancelar</button>
+                    <button id="btnGuardar" class="btn btn-principal" type="submit">Guardar usuario</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <script src="/usuarios/usuarios.js"></script>
+</body>
+
+</html>

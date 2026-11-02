@@ -1,13 +1,14 @@
+
 const Usuario = require('../models/usuarioModel');
 const bcrypt = require('bcryptjs');
 
-// Listar todos los usuarios
+// Listar usuarios
 const listarUsuarios = (req, res) => {
     Usuario.obtenerTodos((err, resultados) => {
         if (err) {
             console.error('Error al obtener usuarios:', err);
             return res.status(500).json({
-                error: 'Error interno del servidor al consultar usuarios'
+                error: 'Error interno al consultar usuarios'
             });
         }
 
@@ -17,17 +18,15 @@ const listarUsuarios = (req, res) => {
 
 // Obtener usuario por ID
 const obtenerUsuarioPorId = (req, res) => {
-    const { id } = req.params;
-
-    Usuario.obtenerPorId(id, (err, resultados) => {
+    Usuario.obtenerPorId(req.params.id, (err, resultados) => {
         if (err) {
             console.error('Error al obtener usuario:', err);
             return res.status(500).json({
-                error: 'Error interno del servidor al consultar el usuario'
+                error: 'Error interno al consultar el usuario'
             });
         }
 
-        if (resultados.length === 0) {
+        if (!resultados.length) {
             return res.status(404).json({
                 error: 'Usuario no encontrado'
             });
@@ -38,18 +37,19 @@ const obtenerUsuarioPorId = (req, res) => {
 };
 
 // Crear usuario
-// La contraseña se guarda con bcrypt
 const crearUsuario = (req, res) => {
-    const {
-        id_rol,
-        usuario,
-        contrasena,
-        estado
-    } = req.body;
+    const { id_rol, contrasena, estado } = req.body;
+    const usuario = String(req.body.usuario || '').trim();
 
     if (!id_rol || !usuario || !contrasena) {
         return res.status(400).json({
-            error: 'Faltan campos obligatorios'
+            error: 'Usuario, contraseña y rol son obligatorios'
+        });
+    }
+
+    if (String(contrasena).length < 8) {
+        return res.status(400).json({
+            error: 'La contraseña debe tener al menos 8 caracteres'
         });
     }
 
@@ -71,7 +71,7 @@ const crearUsuario = (req, res) => {
             }
 
             return res.status(500).json({
-                error: 'Error al registrar el usuario en la base de datos'
+                error: 'Error al registrar el usuario'
             });
         }
 
@@ -83,78 +83,108 @@ const crearUsuario = (req, res) => {
 };
 
 // Actualizar usuario
-// La contraseña se guarda con bcrypt
 const actualizarUsuario = (req, res) => {
     const { id } = req.params;
-
-    const {
-        id_rol,
-        usuario,
-        contrasena,
-        estado
-    } = req.body;
+    const { id_rol, contrasena, estado } = req.body;
+    const usuario = String(req.body.usuario || '').trim();
 
     if (!id_rol || !usuario) {
         return res.status(400).json({
-            error: 'Faltan campos obligatorios'
+            error: 'El usuario y el rol son obligatorios'
         });
     }
 
-    const usuarioActualizado = {
-        id_rol,
-        usuario,
-        contrasena_hash: contrasena ? bcrypt.hashSync(contrasena, 10) : null,
-        estado: estado === undefined ? true : estado
-    };
+    if (contrasena && String(contrasena).length < 8) {
+        return res.status(400).json({
+            error: 'La contraseña debe tener al menos 8 caracteres'
+        });
+    }
 
-    Usuario.actualizar(id, usuarioActualizado, (err, resultado) => {
+    // Consultar primero para comprobar existencia y conservar el estado.
+    Usuario.obtenerPorId(id, (err, resultados) => {
         if (err) {
-            console.error('Error al actualizar usuario:', err);
-
-            if (err.code === 'ER_DUP_ENTRY') {
-                return res.status(400).json({
-                    error: 'El nombre de usuario ya está registrado'
-                });
-            }
-
+            console.error('Error al consultar usuario:', err);
             return res.status(500).json({
-                error: 'Error al actualizar el usuario'
+                error: 'Error al consultar el usuario'
             });
         }
 
-        if (resultado.affectedRows === 0) {
+        if (!resultados.length) {
             return res.status(404).json({
                 error: 'Usuario no encontrado'
             });
         }
 
-        res.json({
-            mensaje: 'Usuario actualizado exitosamente'
+        const actual = resultados[0];
+
+        const usuarioActualizado = {
+            id_rol,
+            usuario,
+            contrasena_hash: contrasena
+                ? bcrypt.hashSync(contrasena, 10)
+                : null,
+            estado: estado === undefined ? actual.estado : estado
+        };
+
+        Usuario.actualizar(id, usuarioActualizado, (error, resultado) => {
+            if (error) {
+                console.error('Error al actualizar usuario:', error);
+
+                if (error.code === 'ER_DUP_ENTRY') {
+                    return res.status(400).json({
+                        error: 'El nombre de usuario ya está registrado'
+                    });
+                }
+
+                return res.status(500).json({
+                    error: 'Error al actualizar el usuario'
+                });
+            }
+
+            // No se usa affectedRows para decidir si existe:
+            // MySQL puede devolver cero si los datos no cambiaron.
+            res.json({
+                mensaje: 'Usuario actualizado exitosamente'
+            });
         });
     });
 };
 
-// Eliminar usuario
+// Desactivar usuario sin borrar el registro
 const eliminarUsuario = (req, res) => {
     const { id } = req.params;
 
-    Usuario.eliminar(id, (err, resultado) => {
+    Usuario.obtenerPorId(id, (err, resultados) => {
         if (err) {
-            console.error('Error al eliminar usuario:', err);
-
+            console.error('Error al consultar usuario:', err);
             return res.status(500).json({
-                error: 'Error al eliminar el usuario'
+                error: 'Error al consultar el usuario'
             });
         }
 
-        if (resultado.affectedRows === 0) {
+        if (!resultados.length) {
             return res.status(404).json({
                 error: 'Usuario no encontrado'
             });
         }
 
-        res.json({
-            mensaje: 'Usuario desactivado exitosamente'
+        if (Number(resultados[0].estado) === 0) {
+            return res.json({
+                mensaje: 'El usuario ya estaba desactivado'
+            });
+        }
+
+        Usuario.eliminar(id, (error) => {
+            if (error) {
+                console.error('Error al desactivar usuario:', error);
+                return res.status(500).json({
+                    error: 'Error al desactivar el usuario'
+                });
+            }
+
+            res.json({
+                mensaje: 'Usuario desactivado exitosamente'
+            });
         });
     });
 };
