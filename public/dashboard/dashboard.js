@@ -11,6 +11,10 @@ if (['Jefe inmediato', 'Analista de Nómina', 'Gerente'].includes(usuario.rol)) 
     document.getElementById('navAprobaciones').style.display = '';
 }
 
+if (usuario.rol === 'Administrador de TI') {
+    document.getElementById('navUsuarios').style.display = '';
+}
+
 document.getElementById('nombreBienvenida').textContent = nombre;
 
 async function cargarSolicitudes() {
