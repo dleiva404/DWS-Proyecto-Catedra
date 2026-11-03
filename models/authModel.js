@@ -1,4 +1,3 @@
-
 const db = require('../config/db');
 
 class AuthModel {
@@ -13,33 +12,23 @@ class AuthModel {
              WHERE u.usuario = ?`,
             [usuario]
         );
-
         return rows[0];
     }
-
-    // Verificar si un empleado tiene como supervisor directo al jefe
+    // true si idEmpleado tiene como supervisor directo a idJefe
     static async esJefeDe(idJefe, idEmpleado) {
         const [rows] = await db.promise().query(
-            `SELECT id_empleado
-             FROM empleado
-             WHERE id_empleado = ? AND id_supervisor = ?`,
+            'SELECT id_empleado FROM empleado WHERE id_empleado = ? AND id_supervisor = ?',
             [idEmpleado, idJefe]
         );
-
         return rows.length > 0;
     }
-
-    // Verificar si la cuenta existe y está activa
+    // true si la cuenta sigue activa
     static async estaActivo(id_usuario) {
         const [rows] = await db.promise().query(
-            `SELECT estado
-             FROM usuario
-             WHERE id_usuario = ?`,
+            'SELECT estado FROM usuario WHERE id_usuario = ?',
             [id_usuario]
         );
-
-        return rows.length > 0 &&
-            Number(rows[0].estado) === 1;
+        return rows.length > 0 && !!rows[0].estado;
     }
 }
 

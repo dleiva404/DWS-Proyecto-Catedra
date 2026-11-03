@@ -1,32 +1,26 @@
-
 const token = localStorage.getItem('token');
 const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
 
-if (!token) {
-    window.location.href = '/login/index.html';
-}
+if (!token) window.location.href = '/login/index.html';
 
 const nombre = usuario.nombre || usuario.usuario || 'Usuario';
 
 document.getElementById('nombreUsuario').textContent = nombre;
-document.getElementById('nombreBienvenida').textContent = nombre;
 
-// Mostrar aprobaciones según el rol
 if (['Jefe inmediato', 'Analista de Nómina', 'Gerente'].includes(usuario.rol)) {
     document.getElementById('navAprobaciones').style.display = '';
 }
 
-// Mostrar Gestión de usuarios únicamente al Administrador de TI
 if (usuario.rol === 'Administrador de TI') {
     document.getElementById('navUsuarios').style.display = '';
 }
 
+document.getElementById('nombreBienvenida').textContent = nombre;
+
 async function cargarSolicitudes() {
     try {
         const respuesta = await fetch('/api/solicitudes/mis-solicitudes', {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
+            headers: { Authorization: `Bearer ${token}` }
         });
 
         if (respuesta.status === 401) {
@@ -37,40 +31,27 @@ async function cargarSolicitudes() {
         }
 
         if (respuesta.status === 400) {
-            document.getElementById('tablaSolicitudes').innerHTML =
-                '<tr><td colspan="4">Tu usuario no está registrado como empleado, por eso no tiene solicitudes propias.</td></tr>';
+            document.getElementById('tablaSolicitudes').innerHTML = '<tr><td colspan="4">Tu usuario no está registrado como empleado, por eso no tiene solicitudes propias.</td></tr>';
             return;
         }
 
-        if (!respuesta.ok) {
-            throw new Error('Error al cargar las solicitudes');
-        }
+        if (!respuesta.ok) throw new Error();
 
         const solicitudes = await respuesta.json();
 
-        document.getElementById('pendientes').textContent =
-            solicitudes.filter(s => s.estado === 'Pendiente').length;
-
-        document.getElementById('aprobadas').textContent =
-            solicitudes.filter(s => s.estado === 'Aprobada').length;
-
-        document.getElementById('rechazadas').textContent =
-            solicitudes.filter(s => s.estado === 'Rechazada').length;
+        document.getElementById('pendientes').textContent = solicitudes.filter(s => s.estado === 'Pendiente').length;
+        document.getElementById('aprobadas').textContent = solicitudes.filter(s => s.estado === 'Aprobada').length;
+        document.getElementById('rechazadas').textContent = solicitudes.filter(s => s.estado === 'Rechazada').length;
 
         const tabla = document.getElementById('tablaSolicitudes');
 
         if (!solicitudes.length) {
-            tabla.innerHTML =
-                '<tr><td colspan="4">No tienes solicitudes.</td></tr>';
+            tabla.innerHTML = '<tr><td colspan="4">No tienes solicitudes.</td></tr>';
             return;
         }
 
         tabla.innerHTML = solicitudes.slice(0, 4).map(s => {
-            const tipo =
-                Number(s.id_tipo_solicitud) === 1 ? 'Vacaciones' :
-                    Number(s.id_tipo_solicitud) === 2 ? 'Permiso' :
-                        'Constancia';
-
+            const tipo = Number(s.id_tipo_solicitud) === 1 ? 'Vacaciones' : Number(s.id_tipo_solicitud) === 2 ? 'Permiso' : 'Constancia';
             const estado = s.estado.toLowerCase();
 
             return `
@@ -83,8 +64,7 @@ async function cargarSolicitudes() {
         }).join('');
 
     } catch (error) {
-        document.getElementById('tablaSolicitudes').innerHTML =
-            '<tr><td colspan="4">No se pudieron cargar las solicitudes.</td></tr>';
+        document.getElementById('tablaSolicitudes').innerHTML = '<tr><td colspan="4">No se pudieron cargar las solicitudes.</td></tr>';
     }
 }
 
@@ -93,17 +73,14 @@ function formatearFecha(fecha) {
     return new Date(fecha).toLocaleDateString('es-SV');
 }
 
-// Cerrar sesión
 document.getElementById('cerrarSesion').addEventListener('click', async () => {
+
     try {
         await fetch('/api/auth/logout', {
             method: 'POST',
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
+            headers: { Authorization: `Bearer ${token}` }
         });
-    } catch (error) {
-        // Se limpia la sesión local aunque falle la petición.
+    } catch (e) {
     }
 
     localStorage.removeItem('token');

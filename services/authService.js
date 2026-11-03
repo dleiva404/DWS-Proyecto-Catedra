@@ -1,9 +1,8 @@
-
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const AuthModel = require('../models/authModel');
 
-// Error con código HTTP
+// error con codigo http
 class HttpError extends Error {
     constructor(mensaje, status) {
         super(mensaje);
@@ -12,91 +11,57 @@ class HttpError extends Error {
 }
 
 class AuthService {
-    // Tokens revocados durante la ejecución del servidor
+
+    // tokens logout
     static tokensRevocados = new Set();
 
     static logout(token) {
-        if (token) {
-            AuthService.tokensRevocados.add(token);
-        }
+        AuthService.tokensRevocados.add(token);
     }
 
     static estaRevocado(token) {
         return AuthService.tokensRevocados.has(token);
     }
 
-    // Validar que el jefe solo actúe sobre su personal
+    // valida que el jefe solo actue sobre su personal
     static async esJefeDe(idJefe, idEmpleado) {
-        if (!idJefe || !idEmpleado) {
-            return false;
-        }
-
+        if (!idJefe || !idEmpleado) return false;
         return AuthModel.esJefeDe(idJefe, idEmpleado);
     }
 
-    // Comprobar que la cuenta siga activa
+    // la cuenta pudo desactivarse despues del login
     static async estaActivo(id_usuario) {
         return AuthModel.estaActivo(id_usuario);
     }
 
-    // Iniciar sesión
     static async login(usuario, contrasena) {
         if (!usuario || !contrasena) {
-            throw new HttpError(
-                'Usuario y/o contraseña no ingresados',
-                400
-            );
+            throw new HttpError('Usuario y/o contraseña no ingresados', 400);
         }
 
         const user = await AuthModel.buscarPorUsuario(usuario);
 
-        // Usuario inexistente
+        // Error si el usuario fue mal ingresado o no existe
         if (!user) {
-            throw new HttpError(
-                'Credenciales incorrectas',
-                401
-            );
+            throw new HttpError('Credenciales incorrectas', 401);
         }
-
-        // Verificar contraseña usando el hash almacenado
-        const valida = await bcrypt.compare(
-            contrasena,
-            user.contrasena_hash
-        );
-
+        // Error si la contraseña fue mal ingresada
+        const valida = await bcrypt.compare(contrasena, user.contrasena_hash);
         if (!valida) {
-            throw new HttpError(
-                'Credenciales incorrectas',
-                401
-            );
+            throw new HttpError('Credenciales incorrectas', 401);
         }
 
-        // Rechazar cuentas inactivas
-        if (Number(user.estado) !== 1) {
-            throw new HttpError(
-                'La cuenta está desactivada',
-                403
-            );
+        if (!user.estado) {
+            throw new HttpError('La cuenta está desactivada', 403);
         }
 
-        // Datos incluidos en el token
         const payload = {
             id_usuario: user.id_usuario,
             id_empleado: user.id_empleado,
             rol: user.rol
         };
 
-        if (!process.env.JWT_SECRET) {
-            throw new Error(
-                'La variable JWT_SECRET no está configurada'
-            );
-        }
-
-        const token = jwt.sign(
-            payload,
-            process.env.JWT_SECRET,
-            { expiresIn: '8h' }
-        );
+        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '8h' });
 
         return {
             token,
