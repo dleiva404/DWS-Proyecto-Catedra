@@ -15,6 +15,17 @@ if (usuario.rol === 'Administrador de TI') {
     document.getElementById('navUsuarios').style.display = '';
 }
 
+const rolesEmpleados = [
+    'Administrador de TI',
+    'Asistente de planilla',
+    'Analista de Nómina',
+    'Gerente'
+];
+
+if (rolesEmpleados.includes(usuario.rol)) {
+    document.getElementById('navEmpleados').style.display = '';
+}
+
 document.getElementById('nombreBienvenida').textContent = nombre;
 
 async function cargarSolicitudes() {

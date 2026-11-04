@@ -3,11 +3,14 @@ const router = express.Router();
 const usuarioController = require('../controllers/usuarioController');
 const { AuthMiddleware, ROLES } = require('../middlewares/authMiddleware');
 
-// todas las rutas de usuarios para el Administrador de TI
-router.use(AuthMiddleware.verificarToken, AuthMiddleware.verificarRol(ROLES.ADMIN_TI));
+// La consulta general tambien se utiliza desde Gestion de empleados.
+router.use(AuthMiddleware.verificarToken);
 
 // Obtener todos los usuarios
-router.get('/', usuarioController.listarUsuarios);
+router.get('/', AuthMiddleware.verificarRol(ROLES.ADMIN_TI, ROLES.ASISTENTE), usuarioController.listarUsuarios);
+
+// Las demas operaciones de usuarios son solo para Administrador de TI.
+router.use(AuthMiddleware.verificarRol(ROLES.ADMIN_TI));
 
 // Obtener usuario por ID
 router.get('/:id', usuarioController.obtenerUsuarioPorId);

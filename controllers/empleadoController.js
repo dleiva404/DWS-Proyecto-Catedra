@@ -1,4 +1,5 @@
 const Empleado = require('../models/empleadoModel');
+const SaldoVacaciones = require('../models/saldoVacacionesModel');
 
 function validarDatosEmpleado(datos, idEmpleado) {
     const formatoCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -51,6 +52,50 @@ const obtenerEmpleadoPorId = (req, res) => {
     });
 };
 
+// Obtener saldo de vacaciones del empleado para el año solicitado
+const obtenerSaldoVacaciones = (req, res) => {
+    const idEmpleado = Number(req.params.id);
+    const anio = req.query.anio === undefined
+        ? new Date().getFullYear()
+        : Number(req.query.anio);
+
+    if (!Number.isSafeInteger(idEmpleado) || idEmpleado <= 0 ||
+        !Number.isInteger(anio) || anio < 2000 || anio > 2100) {
+        return res.status(400).json({ error: 'Empleado o año no válido' });
+    }
+
+    Empleado.obtenerPorId(idEmpleado, (errorEmpleado, empleados) => {
+        if (errorEmpleado) {
+            console.error('Error al consultar empleado:', errorEmpleado);
+            return res.status(500).json({ error: 'No fue posible consultar el empleado' });
+        }
+
+        if (!empleados.length) {
+            return res.status(404).json({ error: 'Empleado no encontrado' });
+        }
+
+        SaldoVacaciones.obtenerDiasDisponibles(idEmpleado, anio, (errorSaldo, saldos) => {
+            if (errorSaldo) {
+                console.error('Error al consultar saldo de vacaciones:', errorSaldo);
+                return res.status(500).json({ error: 'No fue posible consultar el saldo de vacaciones' });
+            }
+
+            if (!saldos.length) {
+                return res.json({ anio, registrado: false });
+            }
+
+            const saldo = saldos[0];
+            res.json({
+                anio,
+                registrado: true,
+                dias_asignados: Number(saldo.dias_asignados),
+                dias_utilizados: Number(saldo.dias_utilizados),
+                dias_disponibles: Number(saldo.dias_disponibles)
+            });
+        });
+    });
+};
+
 // Crear empleado
 const crearEmpleado = (req, res) => {
     const {
@@ -60,8 +105,7 @@ const crearEmpleado = (req, res) => {
         apellido,
         correo,
         cargo,
-        fecha_ingreso,
-        estado
+        fecha_ingreso
     } = req.body;
 
     if (!id_usuario || !nombre || !apellido || !correo || !cargo || !fecha_ingreso) {
@@ -81,7 +125,7 @@ const crearEmpleado = (req, res) => {
         correo,
         cargo,
         fecha_ingreso,
-        estado: estado === undefined ? true : estado
+        estado: true
     };
 
     Empleado.crear(nuevoEmpleado, (err, resultado) => {
@@ -124,8 +168,7 @@ const actualizarEmpleado = (req, res) => {
         apellido,
         correo,
         cargo,
-        fecha_ingreso,
-        estado
+        fecha_ingreso
     } = req.body;
 
     if (!id_usuario || !nombre || !apellido || !correo || !cargo || !fecha_ingreso) {
@@ -144,8 +187,7 @@ const actualizarEmpleado = (req, res) => {
         apellido,
         correo,
         cargo,
-        fecha_ingreso,
-        estado: estado === undefined ? true : estado
+        fecha_ingreso
     };
 
     Empleado.actualizar(id, empleadoActualizado, (err, resultado) => {
@@ -181,6 +223,28 @@ const actualizarEmpleado = (req, res) => {
     });
 };
 
+// Reactivar empleado
+const reactivarEmpleado = (req, res) => {
+    const idEmpleado = Number(req.params.id);
+
+    if (!Number.isSafeInteger(idEmpleado) || idEmpleado <= 0) {
+        return res.status(400).json({ error: 'El identificador del empleado no es válido' });
+    }
+
+    Empleado.reactivar(idEmpleado, (err, resultado) => {
+        if (err) {
+            console.error('Error al reactivar empleado:', err);
+            return res.status(500).json({ error: 'No fue posible reactivar el empleado' });
+        }
+
+        if (resultado.affectedRows === 0) {
+            return res.status(404).json({ error: 'El empleado no existe o ya está activo' });
+        }
+
+        res.json({ mensaje: 'Empleado reactivado exitosamente' });
+    });
+};
+
 // Eliminar empleado
 const eliminarEmpleado = (req, res) => {
     const { id } = req.params;
@@ -209,7 +273,9 @@ const eliminarEmpleado = (req, res) => {
 module.exports = {
     listarEmpleados,
     obtenerEmpleadoPorId,
+    obtenerSaldoVacaciones,
     crearEmpleado,
     actualizarEmpleado,
-    eliminarEmpleado
+    eliminarEmpleado,
+    reactivarEmpleado
 };

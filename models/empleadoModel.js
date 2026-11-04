@@ -43,8 +43,7 @@ const Empleado = {
                 apellido = ?,
                 correo = ?,
                 cargo = ?,
-                fecha_ingreso = ?,
-                estado = ?
+                fecha_ingreso = ?
             WHERE id_empleado = ?
         `;
 
@@ -56,14 +55,19 @@ const Empleado = {
             data.correo,
             data.cargo,
             data.fecha_ingreso,
-            data.estado,
             id
         ], callback);
     },
 
-    // Eliminar un empleado
+    // Desactivar un empleado
     eliminar: (id, callback) => {
         const query = 'UPDATE empleado SET estado = FALSE WHERE id_empleado = ?';
+        db.query(query, [id], callback);
+    },
+
+    // Reactivar un empleado inactivo
+    reactivar: (id, callback) => {
+        const query = 'UPDATE empleado SET estado = TRUE WHERE id_empleado = ? AND estado = FALSE';
         db.query(query, [id], callback);
     }
 };

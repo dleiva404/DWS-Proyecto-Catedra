@@ -1,0 +1,365 @@
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Grupo Calma - Gestión de empleados</title>
+
+    <link rel="stylesheet" href="empleados.css">
+    <script src="empleados.js" defer></script>
+</head>
+
+<body>
+    <!-- ENCABEZADO -->
+    <header class="header">
+        <div class="logo-area">
+            <img
+                src="../assets/logo.png"
+                alt="Invercalma - Grupo Calma"
+                class="logo"
+            >
+        </div>
+
+        <nav class="nav" aria-label="Navegación principal">
+            <a href="/dashboard/dashboard.html">
+                Dashboard
+            </a>
+
+            <a href="/solicitudes/solicitudes.html">
+                Mis Solicitudes
+            </a>
+
+            <a
+                href="/empleados/empleados.html"
+                class="activo"
+                aria-current="page"
+            >
+                Gestión de empleados
+            </a>
+        </nav>
+
+        <div class="usuario-area">
+            <span aria-hidden="true">♙</span>
+            <strong id="nombreUsuario">Usuario</strong>
+            <button id="cerrarSesion" type="button">Salir</button>
+        </div>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="contenido">
+
+        <!-- ENCABEZADO DE PÁGINA -->
+        <section class="encabezado-pagina">
+            <div>
+                <h1>Gestión de empleados</h1>
+                <p>Consulta y administra la información del personal.</p>
+            </div>
+
+            <button
+                id="btnNuevoEmpleado"
+                class="btn btn-principal"
+                type="button"
+                disabled
+            >
+                + Nuevo empleado
+            </button>
+        </section>
+
+        <!-- LISTADO DE EMPLEADOS -->
+        <section class="panel" aria-label="Listado de empleados">
+
+            <!-- BÚSQUEDA Y FILTROS -->
+            <div class="barra-herramientas">
+                <div class="campo">
+                    <label for="buscarEmpleado">Buscar por nombre</label>
+                    <input
+                        id="buscarEmpleado"
+                        type="search"
+                        placeholder="Nombre del empleado"
+                        disabled
+                    >
+                </div>
+
+                <div class="campo">
+                    <label for="filtroCargo">Cargo</label>
+                    <select id="filtroCargo" disabled>
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+
+                <div class="campo">
+                    <label for="filtroEstado">Estado</label>
+                    <select id="filtroEstado" disabled>
+                        <option value="">Todos</option>
+                        <option value="activo">Activo</option>
+                        <option value="inactivo">Inactivo</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- MENSAJES DEL SISTEMA -->
+            <p
+                id="mensaje"
+                class="mensaje"
+                role="status"
+                aria-live="polite"
+            >
+                Cargando empleados...
+            </p>
+
+            <!-- TABLA DE EMPLEADOS -->
+            <div class="tabla-contenedor">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Cargo</th>
+                            <th>Correo</th>
+                            <th>Jefe inmediato</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tablaEmpleados">
+                        <tr>
+                            <td colspan="6" class="texto-vacio">
+                                Cargando empleados...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- CONTADOR DE EMPLEADOS -->
+            <p class="contador">
+                Empleados mostrados:
+                <strong id="totalEmpleados">0</strong>
+            </p>
+        </section>
+
+        <!-- FORMULARIO DE REGISTRO Y EDICIÓN -->
+        <section
+            id="panelNuevoEmpleado"
+            class="panel panel-formulario"
+            hidden
+            aria-labelledby="tituloNuevoEmpleado"
+        >
+            <h2 id="tituloNuevoEmpleado">Registrar empleado</h2>
+
+            <p
+                id="mensajeFormulario"
+                class="mensaje"
+                role="status"
+                aria-live="polite"
+                hidden
+            ></p>
+
+            <form id="formNuevoEmpleado">
+                <div class="campos-formulario">
+
+                    <!-- NOMBRE -->
+                    <div class="campo">
+                        <label for="nuevoNombre">Nombre *</label>
+                        <input
+                            id="nuevoNombre"
+                            name="nombre"
+                            required
+                            maxlength="100"
+                        >
+                    </div>
+
+                    <!-- APELLIDO -->
+                    <div class="campo">
+                        <label for="nuevoApellido">Apellido *</label>
+                        <input
+                            id="nuevoApellido"
+                            name="apellido"
+                            required
+                            maxlength="100"
+                        >
+                    </div>
+
+                    <!-- CORREO -->
+                    <div class="campo">
+                        <label for="nuevoCorreo">Correo *</label>
+                        <input
+                            id="nuevoCorreo"
+                            name="correo"
+                            type="email"
+                            required
+                        >
+                    </div>
+
+                    <!-- CARGO -->
+                    <div class="campo">
+                        <label for="nuevoCargo">Cargo *</label>
+                        <input
+                            id="nuevoCargo"
+                            name="cargo"
+                            required
+                        >
+                    </div>
+
+                    <!-- FECHA DE INGRESO -->
+                    <div class="campo">
+                        <label for="nuevoFecha">Fecha de ingreso *</label>
+                        <input
+                            id="nuevoFecha"
+                            name="fecha_ingreso"
+                            type="date"
+                            required
+                        >
+                    </div>
+
+                    <!-- USUARIO ASOCIADO -->
+                    <div class="campo">
+                        <label for="nuevoUsuario">Usuario asociado *</label>
+                        <select
+                            id="nuevoUsuario"
+                            name="id_usuario"
+                            required
+                        >
+                            <option value="">Seleccionar usuario</option>
+                        </select>
+                    </div>
+
+                    <!-- JEFE INMEDIATO -->
+                    <div class="campo">
+                        <label for="nuevoSupervisor">Jefe inmediato</label>
+                        <select
+                            id="nuevoSupervisor"
+                            name="id_supervisor"
+                        >
+                            <option value="">Sin asignar</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- ACCIONES DEL FORMULARIO -->
+                <div class="acciones-formulario">
+                    <button
+                        id="btnGuardarEmpleado"
+                        class="btn btn-principal"
+                        type="submit"
+                    >
+                        Guardar empleado
+                    </button>
+
+                    <button
+                        id="btnCancelarEmpleado"
+                        class="btn btn-secundario"
+                        type="button"
+                    >
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <!-- MODAL DE CONFIRMACIÓN DE DESACTIVACIÓN -->
+    <div id="modalDesactivar" class="modal-fondo" hidden>
+        <section
+            class="modal-confirmacion"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modalDesactivarTitulo"
+            aria-describedby="modalDesactivarDescripcion"
+            tabindex="-1"
+        >
+            <!-- ENCABEZADO DEL MODAL -->
+            <div class="modal-encabezado">
+                <div class="modal-icono" aria-hidden="true">!</div>
+
+                <h2 id="modalDesactivarTitulo">
+                    ¿Desactivar empleado?
+                </h2>
+            </div>
+
+            <!-- DESCRIPCIÓN -->
+            <p id="modalDesactivarDescripcion">
+                ¿Deseas desactivar a
+                <strong id="modalNombreEmpleado"></strong>?
+                Su registro permanecerá en el sistema, pero su estado
+                cambiará a inactivo.
+            </p>
+
+            <!-- ACCIONES DEL MODAL -->
+            <div class="modal-acciones">
+                <button
+                    id="modalCancelarDesactivar"
+                    class="btn btn-secundario"
+                    type="button"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    id="modalConfirmarDesactivar"
+                    class="btn btn-peligro"
+                    type="button"
+                >
+                    Desactivar empleado
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <div id="modalDetalleEmpleado" class="modal-fondo" hidden>
+        <section
+            class="modal-confirmacion modal-detalle"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="tituloDetalleEmpleado"
+            tabindex="-1"
+        >
+            <h2 id="tituloDetalleEmpleado">Detalle del empleado</h2>
+
+            <dl class="detalle-datos">
+                <div><dt>Nombre completo</dt><dd id="detalleNombre"></dd></div>
+                <div><dt>Correo</dt><dd id="detalleCorreo"></dd></div>
+                <div><dt>Cargo</dt><dd id="detalleCargo"></dd></div>
+                <div><dt>Fecha de ingreso</dt><dd id="detalleFecha"></dd></div>
+                <div><dt>Jefe inmediato</dt><dd id="detalleSupervisor"></dd></div>
+                <div><dt>Estado</dt><dd id="detalleEstado"></dd></div>
+            </dl>
+
+            <section class="detalle-vacaciones" aria-labelledby="tituloVacaciones">
+                <h3 id="tituloVacaciones">Saldo de vacaciones <span id="detalleAnioVacaciones"></span></h3>
+
+                <div class="vacaciones-resumen">
+                    <div>
+                        <span>Días asignados</span>
+                        <strong id="vacacionesAsignadas">—</strong>
+                    </div>
+                    <div>
+                        <span>Días utilizados</span>
+                        <strong id="vacacionesUtilizadas">—</strong>
+                    </div>
+                    <div>
+                        <span>Días disponibles</span>
+                        <strong id="vacacionesDisponibles">—</strong>
+                    </div>
+                </div>
+
+                <p id="mensajeVacaciones" class="vacaciones-mensaje" role="status" aria-live="polite"></p>
+            </section>
+
+            <div class="modal-acciones">
+                <button
+                    id="cerrarDetalleEmpleado"
+                    class="btn btn-principal"
+                    type="button"
+                >
+                    Cerrar
+                </button>
+            </div>
+        </section>
+    </div>
+</body>
+
+</html>
