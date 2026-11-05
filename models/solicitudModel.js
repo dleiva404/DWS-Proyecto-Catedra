@@ -119,9 +119,10 @@ const Solicitud = {
                 fecha_inicio,
                 fecha_fin,
                 motivo,
-                estado
+                estado,
+                archivo_adjunto
             )
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         `;
         db.query(query, [
             data.id_empleado,
@@ -129,7 +130,8 @@ const Solicitud = {
             data.fecha_inicio,
             data.fecha_fin,
             data.motivo,
-            data.estado
+            data.estado,
+            data.archivo_adjunto
         ], callback);
     },
 

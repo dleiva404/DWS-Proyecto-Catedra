@@ -70,6 +70,71 @@ const SolicitudService = {
         });
     },
 
+    verificarAccesoAdjunto: (id_solicitud, usuario, callback) => {
+        Solicitud.obtenerPorId(id_solicitud, (err, solicitudes) => {
+            if (err) return callback({ status: 500, mensaje: 'Error al consultar la solicitud' });
+            if (!solicitudes.length) return callback({ status: 404, mensaje: 'Solicitud no encontrada' });
+
+            const solicitud = solicitudes[0];
+
+            // El dueño de la solicitud siempre puede ver su adjunto
+            const esDueno = Number(solicitud.id_empleado) === Number(usuario.id_empleado);
+            if (esDueno) return callback(null);
+
+            EtapaSolicitud.obtenerPorSolicitud(id_solicitud, (err, etapas) => {
+                if (err) return callback({ status: 500, mensaje: 'Error al consultar las etapas' });
+
+                // Permite el acceso a quien ya resolvió una etapa
+                const participo = etapas.some(
+                    etapa => Number(etapa.id_usuario_responsable) === Number(usuario.id_usuario)
+                );
+
+                if (participo) return callback(null);
+
+                // Verifica si el usuario puede intervenir en la etapa pendiente
+                const etapaPendiente = etapas.find(etapa => etapa.estado === 'Pendiente');
+
+                if (!etapaPendiente)
+                    return callback({ status: 403, mensaje: 'No tiene permisos para ver este archivo' });
+
+                const rolesAprobadores = {
+                    'Jefe inmediato': 2,
+                    'Analista de Nómina': 3,
+                    'Gerente': 4
+                };
+
+                const id_rol = rolesAprobadores[usuario.rol];
+
+                if (!id_rol)
+                    return callback({ status: 403, mensaje: 'No tiene permisos para ver este archivo' });
+
+                validarRol(etapaPendiente, id_rol, usuario.id_empleado, errorRol => {
+                    if (errorRol) return callback(errorRol);
+
+                    validarJefe(etapaPendiente, usuario.id_empleado, errorJefe => {
+                        if (errorJefe) return callback(errorJefe);
+
+                        callback(null);
+                    });
+                });
+            });
+        });
+    },
+
+    obtenerRutaAdjunto: (id_solicitud, callback) => {
+        Solicitud.obtenerPorId(id_solicitud, (err, solicitudes) => {
+            if (err) return callback({ status: 500, mensaje: 'Error al consultar el archivo' });
+            if (!solicitudes.length) return callback({ status: 404, mensaje: 'Solicitud no encontrada' });
+
+            const archivo = solicitudes[0].archivo_adjunto;
+
+            if (!archivo)
+                return callback({ status: 404, mensaje: 'Esta solicitud no tiene un archivo adjunto' });
+
+            callback(null, archivo);
+        });
+    },
+
     validarVacaciones: (id_empleado, fecha_inicio, fecha_fin, callback) => {
         if (!id_empleado) return callback({ status: 400, mensaje: 'El empleado no está identificado' });
         if (!fecha_inicio || !fecha_fin) return callback({ status: 400, mensaje: 'La fecha de inicio y fin son obligatorias' });
@@ -91,7 +156,7 @@ const SolicitudService = {
         const diasSolicitados = contarDiasHabiles(inicio, fin);
 
         if (diasSolicitados === 0)
-            return callback({ status: 400, mensaje: 'El rango no incluye días hábiles'});
+            return callback({ status: 400, mensaje: 'El rango no incluye días hábiles' });
 
         Solicitud.buscarTraslape(id_empleado, fecha_inicio, fecha_fin, (err, traslapes) => {
             if (err) return callback({ status: 500, mensaje: 'Error al verificar las fechas' });
@@ -105,10 +170,10 @@ const SolicitudService = {
                 if (err) return callback({ status: 500, mensaje: 'Error al consultar el saldo de vacaciones' });
                 if (!saldos.length) return callback({ status: 400, mensaje: 'No existe saldo de vacaciones para ese año' });
 
-                                const saldo = saldos[0];
+                const saldo = saldos[0];
 
                 Solicitud.obtenerVacacionesPendientes(id_empleado, (err, pendientes) => {
-                if (err) return callback({ status: 500, mensaje: 'Error al consultar las solicitudes pendientes' });
+                    if (err) return callback({ status: 500, mensaje: 'Error al consultar las solicitudes pendientes' });
 
                     // dias ya comprometidos en solicitudes que aun no se aprueban
                     const comprometidos = pendientes
@@ -117,10 +182,10 @@ const SolicitudService = {
 
                     const disponibles = saldo.dias_disponibles - comprometidos;
 
-                if (diasSolicitados > disponibles)
-                    return callback({
-                         status: 400,
-                         mensaje: `No tiene suficientes días. Disponibles: ${disponibles} (${comprometidos} en solicitudes pendientes)`
+                    if (diasSolicitados > disponibles)
+                        return callback({
+                            status: 400,
+                            mensaje: `No tiene suficientes días. Disponibles: ${disponibles} (${comprometidos} en solicitudes pendientes)`
                         });
 
                     callback(null, {
@@ -134,7 +199,7 @@ const SolicitudService = {
     },
 
     crearSolicitud: (data, callback) => {
-        const { id_empleado, id_tipo_solicitud, fecha_inicio, fecha_fin, motivo } = data;
+        const { id_empleado, id_tipo_solicitud, fecha_inicio, fecha_fin, motivo, archivo_adjunto } = data;
 
         if (!id_empleado)
             return callback({ status: 400, mensaje: 'El empleado no está identificado' });
@@ -144,79 +209,81 @@ const SolicitudService = {
 
         // datos de quien solicita, para armar sus etapas
         Solicitud.obtenerSolicitante(id_empleado, (err, filas) => {
-        if (err || !filas.length) return callback({ status: 500, mensaje: 'No se pudo consultar al solicitante' });
-        const solicitante = filas[0];
+            if (err || !filas.length) return callback({ status: 500, mensaje: 'No se pudo consultar al solicitante' });
+            const solicitante = filas[0];
 
-        if (Number(id_tipo_solicitud) === 1) {
-            return SolicitudService.validarVacaciones(
-                id_empleado, fecha_inicio, fecha_fin,
-                (error, validacion) => {
-                    if (error) return callback(error);
+            if (Number(id_tipo_solicitud) === 1) {
+                return SolicitudService.validarVacaciones(
+                    id_empleado, fecha_inicio, fecha_fin,
+                    (error, validacion) => {
+                        if (error) return callback(error);
 
-                    Solicitud.crear({
-                        id_empleado,
-                        id_tipo_solicitud: 1,
-                        fecha_inicio,
-                        fecha_fin,
-                        motivo: motivo || null,
-                        estado: 'Pendiente'
-                    }, (err, resultado) => {
-                        if (err) return callback({ status: 500, mensaje: 'Error al crear la solicitud' });
+                        Solicitud.crear({
+                            id_empleado,
+                            id_tipo_solicitud: 1,
+                            fecha_inicio,
+                            fecha_fin,
+                            motivo: motivo || null,
+                            archivo_adjunto: archivo_adjunto || null,
+                            estado: 'Pendiente'
+                        }, (err, resultado) => {
+                            if (err) return callback({ status: 500, mensaje: 'Error al crear la solicitud' });
 
-                        const id = resultado.insertId;
+                            const id = resultado.insertId;
 
-                        const etapas = armarEtapas(1, solicitante, id);
+                            const etapas = armarEtapas(1, solicitante, id);
 
-                        crearEtapas(etapas, 0, errorEtapas => {
-                            if (errorEtapas) return callback(errorEtapas);
+                            crearEtapas(etapas, 0, errorEtapas => {
+                                if (errorEtapas) return callback(errorEtapas);
 
-                            callback(null, {
-                                mensaje: 'Solicitud de vacaciones creada correctamente',
-                                id_solicitud: id,
-                                diasSolicitados: validacion.diasSolicitados,
-                                diasDisponibles: validacion.diasDisponibles
+                                callback(null, {
+                                    mensaje: 'Solicitud de vacaciones creada correctamente',
+                                    id_solicitud: id,
+                                    diasSolicitados: validacion.diasSolicitados,
+                                    diasDisponibles: validacion.diasDisponibles
+                                });
                             });
                         });
+                    }
+                );
+            }
+
+            if (typeof motivo !== 'string' || !motivo.trim())
+                return callback({ status: 400, mensaje: 'El motivo es obligatorio para un permiso' });
+
+            if (!fecha_inicio || !fecha_fin)
+                return callback({ status: 400, mensaje: 'La fecha de inicio y fin son obligatorias' });
+
+            if ((fecha_inicio && isNaN(new Date(fecha_inicio))) || (fecha_fin && isNaN(new Date(fecha_fin))))
+                return callback({ status: 400, mensaje: 'Las fechas no son válidas' });
+
+            if (fecha_inicio && fecha_fin && new Date(fecha_fin) < new Date(fecha_inicio))
+                return callback({ status: 400, mensaje: 'La fecha de fin no puede ser anterior a la fecha de inicio' });
+
+            Solicitud.crear({
+                id_empleado,
+                id_tipo_solicitud: 2,
+                fecha_inicio: fecha_inicio || null,
+                fecha_fin: fecha_fin || null,
+                motivo: motivo.trim(),
+                archivo_adjunto: archivo_adjunto || null,
+                estado: 'Pendiente'
+            }, (err, resultado) => {
+                if (err) return callback({ status: 500, mensaje: 'Error al crear la solicitud de permiso' });
+
+                const id = resultado.insertId;
+
+                const etapas = armarEtapas(2, solicitante, id);
+
+                crearEtapas(etapas, 0, errorEtapas => {
+                    if (errorEtapas) return callback(errorEtapas);
+
+                    callback(null, {
+                        mensaje: 'Solicitud de permiso creada correctamente',
+                        id_solicitud: id
                     });
-                }
-            );
-        }
-
-        if (typeof motivo !== 'string' || !motivo.trim())
-            return callback({ status: 400, mensaje: 'El motivo es obligatorio para un permiso' });
-
-        if (!fecha_inicio || !fecha_fin)
-            return callback({ status: 400, mensaje: 'La fecha de inicio y fin son obligatorias' });
-
-        if ((fecha_inicio && isNaN(new Date(fecha_inicio))) || (fecha_fin && isNaN(new Date(fecha_fin))))
-            return callback({ status: 400, mensaje: 'Las fechas no son válidas' });
-
-        if (fecha_inicio && fecha_fin && new Date(fecha_fin) < new Date(fecha_inicio))
-            return callback({ status: 400, mensaje: 'La fecha de fin no puede ser anterior a la fecha de inicio' });
-
-        Solicitud.crear({
-            id_empleado,
-            id_tipo_solicitud: 2,
-            fecha_inicio: fecha_inicio || null,
-            fecha_fin: fecha_fin || null,
-            motivo: motivo.trim(),
-            estado: 'Pendiente'
-        }, (err, resultado) => {
-            if (err) return callback({ status: 500, mensaje: 'Error al crear la solicitud de permiso' });
-
-            const id = resultado.insertId;
-
-            const etapas = armarEtapas(2, solicitante, id);
-
-            crearEtapas(etapas, 0, errorEtapas => {
-                if (errorEtapas) return callback(errorEtapas);
-
-                callback(null, {
-                    mensaje: 'Solicitud de permiso creada correctamente',
-                    id_solicitud: id
                 });
             });
-        });
         });
     },
 
@@ -239,61 +306,61 @@ const SolicitudService = {
                 return callback({ status: 400, mensaje: 'Esta etapa no está disponible para ser resuelta' });
 
             validarRol(etapa, rol, id_empleado, errRol => {
-            if (errRol) return callback(errRol);
+                if (errRol) return callback(errRol);
 
-            validarJefe(etapa, id_empleado, errJefe => {
-            if (errJefe) return callback(errJefe);
+                validarJefe(etapa, id_empleado, errJefe => {
+                    if (errJefe) return callback(errJefe);
 
-            const ahora = new Date();
+                    const ahora = new Date();
 
-            EtapaSolicitud.actualizar(id_etapa, {
-                id_solicitud: etapa.id_solicitud,
-                id_rol: etapa.id_rol,
-                nombre_etapa: etapa.nombre_etapa,
-                orden: etapa.orden,
-                estado: decision,
-                fecha_inicio: etapa.fecha_inicio,
-                fecha_resolucion: ahora,
-                decision,
-                comentario: comentario || null,
-                id_usuario_responsable: id_usuario
-            }, err => {
-                if (err) return callback({ status: 500, mensaje: 'Error al registrar la decisión' });
-
-                if (decision === 'Rechazada') {
-                    return Solicitud.actualizarEstado(etapa.id_solicitud, 'Rechazada', err => {
-                        if (err) return callback({ status: 500, mensaje: 'Error al actualizar la solicitud' });
-                        callback(null, { mensaje: 'Solicitud rechazada correctamente' });
-                    });
-                }
-
-                EtapaSolicitud.obtenerPorSolicitud(etapa.id_solicitud, (err, etapasSolicitud) => {
-                    if (err) return callback({ status: 500, mensaje: 'Error al consultar las etapas' });
-
-                    const siguiente = etapasSolicitud.find(
-                        e => Number(e.orden) === Number(etapa.orden) + 1
-                    );
-
-                    if (!siguiente)
-                        return finalizarSolicitud(etapa.id_solicitud, callback);
-
-                    EtapaSolicitud.actualizar(siguiente.id_etapa_solicitud, {
-                        id_solicitud: siguiente.id_solicitud,
-                        id_rol: siguiente.id_rol,
-                        nombre_etapa: siguiente.nombre_etapa,
-                        orden: siguiente.orden,
-                        estado: 'Pendiente',
-                        fecha_inicio: ahora,
-                        fecha_resolucion: null,
-                        decision: null,
-                        comentario: null
+                    EtapaSolicitud.actualizar(id_etapa, {
+                        id_solicitud: etapa.id_solicitud,
+                        id_rol: etapa.id_rol,
+                        nombre_etapa: etapa.nombre_etapa,
+                        orden: etapa.orden,
+                        estado: decision,
+                        fecha_inicio: etapa.fecha_inicio,
+                        fecha_resolucion: ahora,
+                        decision,
+                        comentario: comentario || null,
+                        id_usuario_responsable: id_usuario
                     }, err => {
-                        if (err) return callback({ status: 500, mensaje: 'No se pudo activar la siguiente etapa' });
-                        callback(null, { mensaje: 'Etapa aprobada correctamente' });
+                        if (err) return callback({ status: 500, mensaje: 'Error al registrar la decisión' });
+
+                        if (decision === 'Rechazada') {
+                            return Solicitud.actualizarEstado(etapa.id_solicitud, 'Rechazada', err => {
+                                if (err) return callback({ status: 500, mensaje: 'Error al actualizar la solicitud' });
+                                callback(null, { mensaje: 'Solicitud rechazada correctamente' });
+                            });
+                        }
+
+                        EtapaSolicitud.obtenerPorSolicitud(etapa.id_solicitud, (err, etapasSolicitud) => {
+                            if (err) return callback({ status: 500, mensaje: 'Error al consultar las etapas' });
+
+                            const siguiente = etapasSolicitud.find(
+                                e => Number(e.orden) === Number(etapa.orden) + 1
+                            );
+
+                            if (!siguiente)
+                                return finalizarSolicitud(etapa.id_solicitud, callback);
+
+                            EtapaSolicitud.actualizar(siguiente.id_etapa_solicitud, {
+                                id_solicitud: siguiente.id_solicitud,
+                                id_rol: siguiente.id_rol,
+                                nombre_etapa: siguiente.nombre_etapa,
+                                orden: siguiente.orden,
+                                estado: 'Pendiente',
+                                fecha_inicio: ahora,
+                                fecha_resolucion: null,
+                                decision: null,
+                                comentario: null
+                            }, err => {
+                                if (err) return callback({ status: 500, mensaje: 'No se pudo activar la siguiente etapa' });
+                                callback(null, { mensaje: 'Etapa aprobada correctamente' });
+                            });
+                        });
                     });
                 });
-            });
-            });
             });
         });
     }

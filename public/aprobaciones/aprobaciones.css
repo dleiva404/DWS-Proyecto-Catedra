@@ -20,7 +20,7 @@ body {
     padding: 0 40px;
     gap: 30px;
     border-bottom: 1px solid #e2e8f0;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .logo-area {
@@ -294,17 +294,40 @@ td:nth-child(6) {
         padding: 15px 20px;
         min-height: auto;
     }
+
     .nav {
         width: 100%;
         margin-top: 10px;
         overflow-x: auto;
         padding-bottom: 5px;
     }
+
     .usuario-area {
         margin-left: auto;
         border-left: none;
     }
+
     .contenido {
         padding: 20px;
     }
+}
+
+/* Botón para visualizar archivos adjuntos */
+.btn-adjunto {
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-adjunto:hover {
+    background: #2563eb;
+    color: #ffffff;
+    border-color: #2563eb;
 }

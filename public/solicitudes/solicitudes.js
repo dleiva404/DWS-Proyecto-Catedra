@@ -17,6 +17,7 @@ const fechas = document.getElementById('camposFechas');
 const fechaInicio = document.getElementById('fechaInicio');
 const fechaFin = document.getElementById('fechaFin');
 const motivo = document.getElementById('motivo');
+const archivo = document.getElementById('archivo');
 
 document.getElementById('btnNueva').addEventListener('click', () => {
     abrirModal();
@@ -89,21 +90,24 @@ form.addEventListener('submit', async e => {
 
     mostrarMensaje('Creando solicitud...', '');
 
-    const datos = {
-        id_tipo_solicitud: Number(valor),
-        fecha_inicio: fechaInicio.value || null,
-        fecha_fin: fechaFin.value || null,
-        motivo: motivo.value.trim() || null
-    };
+    const datos = new FormData();
+
+    datos.append('id_tipo_solicitud', Number(valor));
+    datos.append('fecha_inicio', fechaInicio.value || '');
+    datos.append('fecha_fin', fechaFin.value || '');
+    datos.append('motivo', motivo.value.trim());
+
+    if (archivo.files.length > 0) {
+        datos.append('archivo', archivo.files[0]);
+    }
 
     try {
         const respuesta = await fetch('/api/solicitudes', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 Authorization: `Bearer ${token}`
             },
-            body: JSON.stringify(datos)
+            body: datos
         });
 
         const resultado = await respuesta.json();
@@ -148,7 +152,7 @@ async function cargarSolicitudes() {
         }
 
         if (respuesta.status === 400) {
-            document.getElementById('tablaSolicitudes').innerHTML = '<tr><td colspan="7">Tu usuario no está registrado como empleado, por eso no tiene solicitudes propias.</td></tr>';
+            document.getElementById('tablaSolicitudes').innerHTML = '<tr><td colspan="8">Tu usuario no está registrado como empleado, por eso no tiene solicitudes propias.</td></tr>';
             return;
         }
 
@@ -163,7 +167,7 @@ async function cargarSolicitudes() {
         const tabla = document.getElementById('tablaSolicitudes');
 
         if (!solicitudes.length) {
-            tabla.innerHTML = '<tr><td colspan="7">No tienes solicitudes registradas.</td></tr>';
+            tabla.innerHTML = '<tr><td colspan="8">No tienes solicitudes registradas.</td></tr>';
             return;
         }
 
@@ -181,11 +185,45 @@ async function cargarSolicitudes() {
                     <td>${formatearFecha(s.fecha_fin)}</td>
                     <td>${s.motivo ? escaparHTML(s.motivo) : '-'}</td>
                     <td><span class="estado estado-${estado}">${s.estado}</span></td>
+                    <td>${s.archivo_adjunto ? `<button type="button" class="btn-adjunto" data-id="${s.id_solicitud}">Ver archivo</button>` : '-'}</td>
                 </tr>`;
         }).join('');
 
     } catch (error) {
-        document.getElementById('tablaSolicitudes').innerHTML = '<tr><td colspan="7">No se pudieron cargar las solicitudes.</td></tr>';
+        document.getElementById('tablaSolicitudes').innerHTML = '<tr><td colspan="8">No se pudieron cargar las solicitudes.</td></tr>';
+    }
+}
+
+async function abrirAdjunto(id) {
+    const nuevaVentana = window.open('', '_blank');
+
+    try {
+        const respuesta = await fetch(`/api/solicitudes/${id}/archivo`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (!respuesta.ok) {
+            const resultado = await respuesta.json();
+            throw new Error(resultado.error || 'No se pudo abrir el archivo.');
+        }
+
+        const archivo = await respuesta.blob();
+        const url = URL.createObjectURL(archivo);
+
+        if (nuevaVentana) {
+            nuevaVentana.location.href = url;
+        } else {
+            URL.revokeObjectURL(url);
+            throw new Error('Permite las ventanas emergentes para ver el archivo.');
+        }
+
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+
+    } catch (error) {
+        if (nuevaVentana) nuevaVentana.close();
+        alert(error.message);
     }
 }
 
@@ -237,3 +275,11 @@ function escaparHTML(texto) {
 
 actualizarFormulario();
 cargarSolicitudes();
+
+document.getElementById('tablaSolicitudes').addEventListener('click', e => {
+    const boton = e.target.closest('.btn-adjunto');
+
+    if (boton) {
+        abrirAdjunto(boton.dataset.id);
+    }
+});

@@ -71,12 +71,13 @@
                             <th>Fin</th>
                             <th>Motivo</th>
                             <th>Estado</th>
+                            <th>Adjunto</th>
                         </tr>
                     </thead>
 
                     <tbody id="tablaSolicitudes">
                         <tr>
-                            <td colspan="7">Cargando solicitudes...</td>
+                            <td colspan="8">Cargando solicitudes...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -122,7 +123,10 @@
                 <label for="motivo">Motivo / Descripción</label>
 
                 <textarea id="motivo" maxlength="500" placeholder="Escribe el motivo o descripción..."></textarea>
+                <label for="archivo">Adjuntar archivo (opcional)</label>
+                <input type="file" id="archivo" name="archivo" accept=".pdf,.jpg,.jpeg,.png">
 
+                <small>Formatos permitidos: PDF, JPG y PNG. Tamaño máximo: 5 MB.</small>
                 <div id="mensaje" class="mensaje"></div>
 
                 <button type="submit" class="btn-enviar">Crear solicitud</button>

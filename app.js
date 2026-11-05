@@ -1,3 +1,4 @@
+
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
@@ -35,11 +36,29 @@ app.use('/api', (req, res) => {
 
 app.use((err, req, res, next) => {
     if (err.type === 'entity.parse.failed') {
-        return res.status(400).json({ error: 'El cuerpo de la petición no es un JSON válido' });
+        return res.status(400).json({
+            error: 'El cuerpo de la petición no es un JSON válido'
+        });
+    }
+
+    // Verifica si el archivo supera los 5 MB
+    if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(413).json({
+            error: 'El archivo no puede superar los 5 MB.'
+        });
+    }
+
+    // Verifica si el formato del archivo no está permitido
+    if (err.message === 'Solo se permiten archivos PDF, JPG y PNG.') {
+        return res.status(400).json({
+            error: err.message
+        });
     }
 
     console.error('Error no controlado:', err);
-    res.status(err.status || 500).json({ error: 'Error interno del servidor' });
+    res.status(err.status || 500).json({
+        error: 'Error interno del servidor'
+    });
 });
 
 const PORT = process.env.PORT || 3000;

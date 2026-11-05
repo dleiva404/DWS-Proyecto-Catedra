@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 
 const solicitudController = require('../controllers/solicitudController');
-const { AuthMiddleware, ROLES } = require ('../middlewares/authMiddleware');
+const { AuthMiddleware, ROLES } = require('../middlewares/authMiddleware');
+const { upload, validarContenidoArchivo } = require('../config/uploadConfig');
 
 router.use(AuthMiddleware.verificarToken);
 
@@ -15,7 +16,7 @@ router.get(
     '/pendientes',
     AuthMiddleware.verificarRol(ROLES.JEFE, ROLES.ANALISTA, ROLES.GERENTE),
     solicitudController.obtenerPendientes
-    );
+);
 
 router.get(
     '/',
@@ -28,8 +29,14 @@ router.get(
     solicitudController.obtenerHistorial
 );
 
+router.get(
+    '/:id/archivo',
+    solicitudController.obtenerArchivo);
+
 router.post(
     '/',
+    upload.single('archivo'),
+    validarContenidoArchivo,
     solicitudController.crearSolicitud
 );
 

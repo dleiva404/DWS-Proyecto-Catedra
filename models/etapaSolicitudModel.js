@@ -38,7 +38,7 @@ const EtapaSolicitud = {
         const query = `
             SELECT es.id_etapa_solicitud, es.nombre_etapa, es.orden,
                    s.id_solicitud, ts.nombre AS tipo, s.fecha_inicio, s.fecha_fin,
-                   s.motivo, s.fecha_solicitud,
+                   s.motivo, s.archivo_adjunto, s.fecha_solicitud,
                    e.id_empleado, e.nombre, e.apellido
             FROM etapa_solicitud es
             JOIN solicitud s ON s.id_solicitud = es.id_solicitud
