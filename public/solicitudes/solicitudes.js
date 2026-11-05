@@ -88,6 +88,39 @@ form.addEventListener('submit', async e => {
         return;
     }
 
+    // Validacion para fechas en blanco si es Vacaciones o Permiso
+    if ((valor === '1' || valor === '2') && (!fechaInicio.value || !fechaFin.value)) {
+        mostrarMensaje('Por favor, completa las fechas de inicio y fin.', 'error');
+        return;
+    }
+
+    // Validacion si la fecha de inicio es anterior a hoy
+    if (fechaInicio.value) {
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+        const inicio = new Date(fechaInicio.value + 'T00:00:00');
+        if (inicio < hoy) {
+            mostrarMensaje('La fecha de inicio no puede ser anterior a hoy', 'error');
+            return;
+        }
+    }
+
+    // Validacion para fecha fin menor que fecha inicio
+    if (fechaInicio.value && fechaFin.value) {
+        const inicio = new Date(fechaInicio.value + 'T00:00:00');
+        const fin = new Date(fechaFin.value + 'T00:00:00');
+        if (fin < inicio) {
+            mostrarMensaje('La fecha de fin no puede ser menor que la fecha de inicio.', 'error');
+            return;
+        }
+    }
+
+    // Validacion para Permiso que requiere Motivo obligatoriamente
+    if (valor === '2' && !motivo.value.trim()) {
+        mostrarMensaje('El motivo es obligatorio para este tipo de solicitud.', 'error');
+        return;
+    }
+
     mostrarMensaje('Creando solicitud...', '');
 
     const datos = new FormData();
@@ -345,3 +378,52 @@ document.getElementById('cerrarHistorial').addEventListener('click', () => {
 document.getElementById('modalHistorial').addEventListener('click', e => {
     if (e.target.id === 'modalHistorial') e.target.classList.add('oculto');
 });
+
+// ==========================================
+// FUNCIONES DE EXPORTACIÓN (EXCEL Y PDF)
+// ==========================================
+
+function exportarExcelSolicitudes() {
+    const tabla = document.getElementById('tablaMisSolicitudes');
+    if (!tabla) {
+        alert('No se encontró la tabla de mis solicitudes para exportar.');
+        return;
+    }
+    const wb = XLSX.utils.table_to_book(tabla, { sheet: "Mis Solicitudes" });
+    XLSX.writeFile(wb, 'Mis_Solicitudes_GrupoCalma.xlsx');
+}
+
+function exportarPDFSolicitudes() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const img = new Image();
+    img.src = '../assets/logo.png';
+
+    img.onload = function() {
+        doc.addImage(img, 'PNG', 14, 8, 35, 12);
+        doc.setFontSize(13);
+        doc.text("Mis Solicitudes de Recursos Humanos - Grupo Calma", 52, 16);
+
+        doc.autoTable({
+            html: '#tablaMisSolicitudes',
+            startY: 26,
+            theme: 'grid',
+            styles: { fontSize: 7 }
+        });
+
+        doc.save('Mis_Solicitudes_GrupoCalma.pdf');
+    };
+
+    img.onerror = function() {
+        doc.setFontSize(14);
+        doc.text("Mis Solicitudes de Recursos Humanos - Grupo Calma", 14, 15);
+        doc.autoTable({
+            html: '#tablaMisSolicitudes',
+            startY: 22,
+            theme: 'grid',
+            styles: { fontSize: 7 }
+        });
+        doc.save('Mis_Solicitudes_GrupoCalma.pdf');
+    };
+}

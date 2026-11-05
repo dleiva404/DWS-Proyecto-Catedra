@@ -250,43 +250,4 @@ function salirSinSesion() {
 }
 
 document.getElementById('btnFiltrar').addEventListener('click', () => {
-    if (filtroDesde.value && filtroHasta.value && filtroDesde.value > filtroHasta.value) {
-        mostrarMensaje('La fecha "desde" no puede ser mayor que la fecha "hasta"', 'error');
-        return;
-    }
-    cargarReporte();
-});
-
-document.getElementById('btnLimpiar').addEventListener('click', () => {
-    filtroDesde.value = '';
-    filtroHasta.value = '';
-    filtroTipo.value = '';
-    cargarReporte();
-});
-
-document.getElementById('cerrarSesion').addEventListener('click', async () => {
-    try {
-        await fetch('/api/auth/logout', {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${token}` }
-        });
-    } catch (e) {
-    }
-
-    salirSinSesion();
-});
-
-document.getElementById('tablaTodas').addEventListener('click', e => {
-    const boton = e.target.closest('.btn-historial');
-    if (boton) verHistorial(boton.dataset.id);
-});
-
-document.getElementById('cerrarHistorial').addEventListener('click', () => {
-    document.getElementById('modalHistorial').classList.add('oculto');
-});
-
-document.getElementById('modalHistorial').addEventListener('click', e => {
-    if (e.target.id === 'modalHistorial') e.target.classList.add('oculto');
-});
-
-cargarReporte();
+    if (fil

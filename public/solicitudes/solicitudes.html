@@ -10,160 +10,172 @@
 
 <body>
 
-    <header class="header">
-        <div class="logo-area">
-            <img src="../assets/logo.png" alt="Invercalma - Grupo Calma" class="logo">
+<header class="header">
+    <div class="logo-area">
+        <img src="../assets/logo.png" alt="Invercalma - Grupo Calma" class="logo">
+    </div>
+
+    <nav class="nav">
+        <a href="/dashboard/dashboard.html">Dashboard</a>
+        <a href="/solicitudes/solicitudes.html" class="activo">Mis Solicitudes</a>
+        <a href="/aprobaciones/aprobaciones.html" id="navAprobaciones" style="display:none">Aprobaciones</a>
+        <a href="/solicitudes/solicitudes.html">Notificaciones</a>
+    </nav>
+
+    <div class="usuario-area">
+        <span>♙</span>
+        <strong id="nombreUsuario">Usuario</strong>
+        <button id="cerrarSesion">Salir</button>
+    </div>
+</header>
+
+<main class="contenido">
+
+    <div class="titulo">
+        <div>
+            <h1>Mis Solicitudes</h1>
+            <p>Consulta y administra tus solicitudes de Recursos Humanos.</p>
         </div>
 
-        <nav class="nav">
-            <a href="/dashboard/dashboard.html">Dashboard</a>
-            <a href="/solicitudes/solicitudes.html" class="activo">Mis Solicitudes</a>
-            <a href="/aprobaciones/aprobaciones.html" id="navAprobaciones" style="display:none">Aprobaciones</a>
-            <a href="/solicitudes/solicitudes.html">Notificaciones</a>
-        </nav>
+        <button id="btnNueva" class="btn-principal">+ Nueva solicitud</button>
+    </div>
 
-        <div class="usuario-area">
-            <span>♙</span>
-            <strong id="nombreUsuario">Usuario</strong>
-            <button id="cerrarSesion">Salir</button>
-        </div>
-    </header>
-
-    <main class="contenido">
-
-        <div class="titulo">
-            <div>
-                <h1>Mis Solicitudes</h1>
-                <p>Consulta y administra tus solicitudes de Recursos Humanos.</p>
-            </div>
-
-            <button id="btnNueva" class="btn-principal">+ Nueva solicitud</button>
+    <section class="estadisticas">
+        <div class="estadistica pendiente">
+            <strong id="pendientes">0</strong>
+            <span>Pendientes</span>
         </div>
 
-        <section class="estadisticas">
-            <div class="estadistica pendiente">
-                <strong id="pendientes">0</strong>
-                <span>Pendientes</span>
-            </div>
+        <div class="estadistica aprobada">
+            <strong id="aprobadas">0</strong>
+            <span>Aprobadas</span>
+        </div>
 
-            <div class="estadistica aprobada">
-                <strong id="aprobadas">0</strong>
-                <span>Aprobadas</span>
-            </div>
+        <div class="estadistica rechazada">
+            <strong id="rechazadas">0</strong>
+            <span>Rechazadas</span>
+        </div>
+    </section>
 
-            <div class="estadistica rechazada">
-                <strong id="rechazadas">0</strong>
-                <span>Rechazadas</span>
-            </div>
-        </section>
-
-        <section class="panel">
+    <section class="panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <h2>Historial de solicitudes</h2>
-
-            <div class="tabla-contenedor">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Tipo</th>
-                            <th>Fecha solicitud</th>
-                            <th>Inicio</th>
-                            <th>Fin</th>
-                            <th>Motivo</th>
-                            <th>Estado</th>
-                            <th>Adjunto</th>
-                            <th>Detalle</th>
-                        </tr>
-                    </thead>
-
-                    <tbody id="tablaSolicitudes">
-                        <tr>
-                            <td colspan="9">Cargando solicitudes...</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="botones-exportar">
+                <button type="button" onclick="exportarExcelSolicitudes()" class="btn-limpiar" style="background: #10b981; color: white; border: none; margin-right: 5px; padding: 6px 12px; border-radius: 6px; cursor: pointer;">Descargar Excel</button>
+                <button type="button" onclick="exportarPDFSolicitudes()" class="btn-limpiar" style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer;">Descargar PDF</button>
             </div>
-        </section>
+        </div>
 
-    </main>
+        <div class="tabla-contenedor">
+            <table id="tablaMisSolicitudes">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tipo</th>
+                    <th>Fecha solicitud</th>
+                    <th>Inicio</th>
+                    <th>Fin</th>
+                    <th>Motivo</th>
+                    <th>Estado</th>
+                    <th>Adjunto</th>
+                    <th>Detalle</th>
+                </tr>
+                </thead>
 
-    <div id="modal" class="modal oculto">
-        <div class="modal-contenido">
+                <tbody id="tablaSolicitudes">
+                <tr>
+                    <td colspan="9">Cargando solicitudes...</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
 
-            <button id="cerrarModal" class="cerrar">×</button>
+</main>
 
-            <h2>Nueva Solicitud</h2>
-            <p class="subtitulo">Selecciona el tipo y completa los datos.</p>
+<div id="modal" class="modal oculto">
+    <div class="modal-contenido">
 
-            <form id="formSolicitud">
+        <button id="cerrarModal" class="cerrar">×</button>
 
-                <label for="tipo">Tipo de solicitud</label>
+        <h2>Nueva Solicitud</h2>
+        <p class="subtitulo">Selecciona el tipo y completa los datos.</p>
 
-                <select id="tipo" required>
-                    <option value="">Selecciona una opción</option>
-                    <option value="1">Vacaciones</option>
-                    <option value="2">Permiso</option>
-                    <option value="3" disabled>Constancia Salarial (próximamente)</option>
-                    <option value="4" disabled>Soporte Técnico (próximamente)</option>
-                </select>
+        <!-- Se agregó novalidate para evitar los mensajes predeterminados del navegador -->
+        <form id="formSolicitud" novalidate>
 
-                <div id="camposFechas" class="fechas">
+            <label for="tipo">Tipo de solicitud</label>
 
-                    <div>
-                        <label for="fechaInicio">Fecha de inicio</label>
-                        <input type="date" id="fechaInicio">
-                    </div>
+            <select id="tipo" required>
+                <option value="">Selecciona una opción</option>
+                <option value="1">Vacaciones</option>
+                <option value="2">Permiso</option>
+                <option value="3" disabled>Constancia Salarial (próximamente)</option>
+                <option value="4" disabled>Soporte Técnico (próximamente)</option>
+            </select>
 
-                    <div>
-                        <label for="fechaFin">Fecha de fin</label>
-                        <input type="date" id="fechaFin">
-                    </div>
+            <div id="camposFechas" class="fechas">
 
+                <div>
+                    <label for="fechaInicio">Fecha de inicio</label>
+                    <input type="date" id="fechaInicio">
                 </div>
 
-                <label for="motivo">Motivo / Descripción</label>
+                <div>
+                    <label for="fechaFin">Fecha de fin</label>
+                    <input type="date" id="fechaFin">
+                </div>
 
-                <textarea id="motivo" maxlength="500" placeholder="Escribe el motivo o descripción..."></textarea>
-                <label for="archivo">Adjuntar archivo (opcional)</label>
-                <input type="file" id="archivo" name="archivo" accept=".pdf,.jpg,.jpeg,.png">
-
-                <small>Formatos permitidos: PDF, JPG y PNG. Tamaño máximo: 5 MB.</small>
-                <div id="mensaje" class="mensaje"></div>
-
-                <button type="submit" class="btn-enviar">Crear solicitud</button>
-
-            </form>
-
-        </div>
-    </div>
-
-        <div id="modalHistorial" class="modal oculto">
-        <div class="modal-contenido modal-historial">
-            <button id="cerrarHistorial" class="cerrar">×</button>
-
-            <h2>Historial de la solicitud <span id="historialId"></span></h2>
-            <p class="subtitulo" id="historialResumen"></p>
-
-            <div class="tabla-contenedor">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Etapa</th>
-                            <th>Estado</th>
-                            <th>Responsable</th>
-                            <th>Fecha</th>
-                            <th>Comentario</th>
-                        </tr>
-                    </thead>
-
-                    <tbody id="tablaHistorial"></tbody>
-                </table>
             </div>
+
+            <label for="motivo">Motivo / Descripción</label>
+
+            <textarea id="motivo" maxlength="500" placeholder="Escribe el motivo o descripción..."></textarea>
+            <label for="archivo">Adjuntar archivo (opcional)</label>
+            <input type="file" id="archivo" name="archivo" accept=".pdf,.jpg,.jpeg,.png">
+
+            <small>Formatos permitidos: PDF, JPG y PNG. Tamaño máximo: 5 MB.</small>
+            <div id="mensaje" class="mensaje"></div>
+
+            <button type="submit" class="btn-enviar">Crear solicitud</button>
+
+        </form>
+
+    </div>
+</div>
+
+<div id="modalHistorial" class="modal oculto">
+    <div class="modal-contenido modal-historial">
+        <button id="cerrarHistorial" class="cerrar">×</button>
+
+        <h2>Historial de la solicitud <span id="historialId"></span></h2>
+        <p class="subtitulo" id="historialResumen"></p>
+
+        <div class="tabla-contenedor">
+            <table>
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Etapa</th>
+                    <th>Estado</th>
+                    <th>Responsable</th>
+                    <th>Fecha</th>
+                    <th>Comentario</th>
+                </tr>
+                </thead>
+
+                <tbody id="tablaHistorial"></tbody>
+            </table>
         </div>
     </div>
+</div>
 
-    <script src="solicitudes.js"></script>
+<!-- Librerías de Exportación (SheetJS y jsPDF con autoTable) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+<script src="solicitudes.js"></script>
 </body>
 
 </html>
