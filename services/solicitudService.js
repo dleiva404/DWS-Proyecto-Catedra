@@ -109,10 +109,10 @@ const SolicitudService = {
                     return callback({ status: 403, mensaje: 'No tiene permisos para ver este archivo' });
 
                 validarRol(etapaPendiente, id_rol, usuario.id_empleado, errorRol => {
-                    if (errorRol) return callback(errorRol);
+                    if (errorRol) return callback({ status: 403, mensaje: 'No tiene permisos para ver este archivo' });
 
                     validarJefe(etapaPendiente, usuario.id_empleado, errorJefe => {
-                        if (errorJefe) return callback(errorJefe);
+                        if (errorJefe) return callback({ status: 403, mensaje: 'No tiene permisos para ver este archivo' });
 
                         callback(null);
                     });

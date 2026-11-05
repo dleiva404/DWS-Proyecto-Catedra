@@ -154,6 +154,10 @@ const actualizarUsuario = (req, res) => {
 const eliminarUsuario = (req, res) => {
     const { id } = req.params;
 
+    if (Number(id) === Number(req.usuario.id_usuario)) {
+        return res.status(400).json({ error: 'No puede desactivar su propia cuenta' });
+    }
+
     Usuario.obtenerPorId(id, (err, resultados) => {
         if (err) {
             console.error('Error al consultar usuario:', err);

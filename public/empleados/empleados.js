@@ -38,6 +38,13 @@ try {
     // Sesión inválida.
 }
 
+// Si el rol no puede ver empleados, se regresa al dashboard
+const ROLES_EMPLEADOS = ['Administrador de TI', 'Asistente de planilla', 'Analista de Nómina', 'Gerente'];
+
+if (!ROLES_EMPLEADOS.includes(rolSesion)) {
+    window.location.replace('/dashboard/dashboard.html');
+}
+
 const puedeCrear = rolSesion === 'Administrador de TI' ||
     rolSesion === 'Asistente de planilla';
 

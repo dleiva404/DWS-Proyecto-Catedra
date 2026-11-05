@@ -10,6 +10,7 @@ const rolRoutes = require('./routes/rolRoutes');
 const tipoSolicitudRoutes = require('./routes/tipoSolicitudRoutes');
 const authRoutes = require('./routes/authRoutes');
 const solicitudRoutes = require('./routes/solicitudRoutes');
+const reporteRoutes = require('./routes/reporteRoutes');
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use('/api/roles', rolRoutes);
 app.use('/api/tipos-solicitud', tipoSolicitudRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/solicitudes', solicitudRoutes);
+app.use('/api/reportes', reporteRoutes);
 
 app.use('/api', (req, res) => {
     res.status(404).json({ error: 'Ruta no encontrada' });
