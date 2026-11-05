@@ -53,7 +53,7 @@ async function cargarReporte() {
         dibujarGraficoEstado(datos.porEstado);
         dibujarGraficoMes(datos.porMes);
         mostrarSaldos(datos.saldos, datos.anio);
-
+        cargarTodas();
     } catch (error) {
         mostrarMensaje('No se pudo conectar con el servidor', 'error');
     }
@@ -128,6 +128,104 @@ function mostrarSaldos(saldos, anio) {
     `).join('');
 }
 
+async function cargarTodas() {
+    const tablaTodas = document.getElementById('tablaTodas');
+
+    try {
+        const respuesta = await fetch('/api/solicitudes', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (respuesta.status === 401) return salirSinSesion();
+        if (!respuesta.ok) throw new Error();
+
+        const solicitudes = await respuesta.json();
+
+        // Se aplican los mismos filtros de arriba
+        const nombresTipo = { 1: 'Vacaciones', 2: 'Permiso' };
+
+        const filtradas = solicitudes.filter(s => {
+            const fecha = new Date(s.fecha_solicitud).toLocaleDateString('en-CA');
+
+            if (filtroDesde.value && fecha < filtroDesde.value) return false;
+            if (filtroHasta.value && fecha > filtroHasta.value) return false;
+            if (filtroTipo.value && s.tipo !== nombresTipo[filtroTipo.value]) return false;
+
+            return true;
+        });
+
+        document.getElementById('totalTodas').textContent = '(' + filtradas.length + ')';
+
+        if (!filtradas.length) {
+            tablaTodas.innerHTML = '<tr><td colspan="9">No hay solicitudes con esos filtros.</td></tr>';
+            return;
+        }
+
+        tablaTodas.innerHTML = filtradas.map(s => `
+            <tr>
+                <td>${s.id_solicitud}</td>
+                <td>${escaparHTML(s.nombre + ' ' + s.apellido)}</td>
+                <td>${escaparHTML(s.tipo)}</td>
+                <td>${formatearFecha(s.fecha_solicitud)}</td>
+                <td>${formatearFecha(s.fecha_inicio)}</td>
+                <td>${formatearFecha(s.fecha_fin)}</td>
+                <td><span class="estado estado-${s.estado.toLowerCase()}">${s.estado}</span></td>
+                <td>${s.etapa_actual ? escaparHTML(s.etapa_actual) : '-'}</td>
+                <td><button type="button" class="btn-adjunto btn-historial" data-id="${s.id_solicitud}">Ver historial</button></td>
+            </tr>
+        `).join('');
+
+    } catch (error) {
+        tablaTodas.innerHTML = '<tr><td colspan="9">No se pudieron cargar las solicitudes.</td></tr>';
+    }
+}
+
+async function verHistorial(id) {
+    const modalHistorial = document.getElementById('modalHistorial');
+    const tablaHistorial = document.getElementById('tablaHistorial');
+    const resumen = document.getElementById('historialResumen');
+
+    document.getElementById('historialId').textContent = '#' + id;
+    resumen.textContent = '';
+    tablaHistorial.innerHTML = '<tr><td colspan="6">Cargando...</td></tr>';
+    modalHistorial.classList.remove('oculto');
+
+    try {
+        const respuesta = await fetch(`/api/solicitudes/${id}/historial`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) throw new Error(datos.error || 'No se pudo cargar el historial.');
+
+        const pendiente = datos.etapas.find(etapa => etapa.estado === 'Pendiente');
+
+        resumen.textContent = pendiente
+            ? 'En espera de: ' + pendiente.nombre_etapa
+            : 'Estado final: ' + datos.solicitud.estado;
+
+        tablaHistorial.innerHTML = datos.etapas.map(etapa => `
+            <tr>
+                <td>${etapa.orden}</td>
+                <td>${escaparHTML(etapa.nombre_etapa)}</td>
+                <td><span class="estado estado-${etapa.estado.toLowerCase()}">${etapa.estado}</span></td>
+                <td>${etapa.responsable ? escaparHTML(etapa.responsable) : '-'}</td>
+                <td>${formatearFecha(etapa.fecha_resolucion)}</td>
+                <td>${etapa.comentario ? escaparHTML(etapa.comentario) : '-'}</td>
+            </tr>
+        `).join('');
+
+    } catch (error) {
+        tablaHistorial.innerHTML = `<tr><td colspan="6">${escaparHTML(error.message)}</td></tr>`;
+    }
+}
+
+function formatearFecha(fecha) {
+    if (!fecha) return '-';
+    return new Date(fecha).toLocaleDateString('es-SV');
+}
+
 function formatearMes(mes) {
     const nombres = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
     const [anio, numero] = mes.split('-');
@@ -176,6 +274,19 @@ document.getElementById('cerrarSesion').addEventListener('click', async () => {
     }
 
     salirSinSesion();
+});
+
+document.getElementById('tablaTodas').addEventListener('click', e => {
+    const boton = e.target.closest('.btn-historial');
+    if (boton) verHistorial(boton.dataset.id);
+});
+
+document.getElementById('cerrarHistorial').addEventListener('click', () => {
+    document.getElementById('modalHistorial').classList.add('oculto');
+});
+
+document.getElementById('modalHistorial').addEventListener('click', e => {
+    if (e.target.id === 'modalHistorial') e.target.classList.add('oculto');
 });
 
 cargarReporte();

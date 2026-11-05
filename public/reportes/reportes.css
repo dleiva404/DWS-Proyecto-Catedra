@@ -82,6 +82,15 @@
     font-weight: 500;
 }
 
+.seccion-todas {
+    margin-top: 25px;
+}
+
+#totalTodas {
+    color: #64748b;
+    font-weight: 500;
+}
+
 @media(max-width:900px) {
     .reportes-totales {
         grid-template-columns: repeat(2, 1fr);
@@ -106,3 +115,4 @@
         flex: 1;
     }
 }
+
