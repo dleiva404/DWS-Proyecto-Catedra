@@ -177,34 +177,40 @@ const SolicitudService = {
             if (traslapes.length)
                 return callback({ status: 400, mensaje: 'Ya existe una solicitud de vacaciones en ese rango' });
 
-            const anio = inicio.getUTCFullYear();
+            const porAnio = diasPorAnio(inicio, fin);
+            const anios = Object.keys(porAnio).map(Number);
 
-            SaldoVacaciones.obtenerDiasDisponibles(id_empleado, anio, (err, saldos) => {
-                if (err) return callback({ status: 500, mensaje: 'Error al consultar el saldo de vacaciones' });
-                if (!saldos.length) return callback({ status: 400, mensaje: 'No existe saldo de vacaciones para ese año' });
-
-                const saldo = saldos[0];
+            buscarSaldos(id_empleado, anios, 0, [], (err, saldos) => {
+                if (err) return callback(err);
 
                 Solicitud.obtenerVacacionesPendientes(id_empleado, (err, pendientes) => {
                     if (err) return callback({ status: 500, mensaje: 'Error al consultar las solicitudes pendientes' });
 
-                    // dias ya comprometidos en solicitudes que aun no se aprueban
-                    const comprometidos = pendientes
-                        .filter(p => new Date(p.fecha_inicio).getFullYear() === anio)
-                        .reduce((total, p) => total + contarDiasHabiles(new Date(p.fecha_inicio), new Date(p.fecha_fin)), 0);
+                    let disponiblesInicio = 0;
 
-                    const disponibles = saldo.dias_disponibles - comprometidos;
+                    // se revisa el saldo de cada año por separado
+                    for (let i = 0; i < anios.length; i++) {
+                        const anio = anios[i];
 
-                    if (diasSolicitados > disponibles)
-                        return callback({
-                            status: 400,
-                            mensaje: `No tiene suficientes días. Disponibles: ${disponibles} (${comprometidos} en solicitudes pendientes)`
-                        });
+                        // dias ya comprometidos en solicitudes que aun no se aprueban
+                        const comprometidos = pendientes.reduce((total, p) =>
+                            total + (diasPorAnio(new Date(p.fecha_inicio), new Date(p.fecha_fin))[anio] || 0), 0);
+
+                        const disponibles = saldos[i].dias_asignados - saldos[i].dias_utilizados - comprometidos;
+
+                        if (porAnio[anio] > disponibles)
+                            return callback({
+                                status: 400,
+                                mensaje: `No tiene suficientes días en ${anio}. Disponibles: ${disponibles} (${comprometidos} en solicitudes pendientes)`
+                            });
+
+                        if (i === 0) disponiblesInicio = disponibles;
+                    }
 
                     callback(null, {
                         diasSolicitados,
-                        diasDisponibles: disponibles,
-                        anio
+                        diasDisponibles: disponiblesInicio,
+                        anio: anios[0]
                     });
                 });
             });
@@ -487,6 +493,49 @@ function contarDiasHabiles(inicio, fin) {
     return dias;
 }
 
+// cuenta los dias habiles de cada año dentro del rango
+function diasPorAnio(inicio, fin) {
+    const dias = {};
+    const actual = new Date(inicio);
+
+    while (actual <= fin) {
+        if (actual.getUTCDay() !== 0) {
+            const anio = actual.getUTCFullYear();
+            dias[anio] = (dias[anio] || 0) + 1;
+        }
+        actual.setUTCDate(actual.getUTCDate() + 1);
+    }
+    return dias;
+}
+
+// busca el saldo del empleado para cada año
+function buscarSaldos(id_empleado, anios, i, saldos, callback) {
+    if (i >= anios.length) return callback(null, saldos);
+
+    SaldoVacaciones.obtenerPorEmpleadoAnio(id_empleado, anios[i], (err, filas) => {
+        if (err) return callback({ status: 500, mensaje: 'Error al consultar el saldo de vacaciones' });
+        if (!filas.length) return callback({ status: 400, mensaje: `No existe saldo de vacaciones para el año ${anios[i]}` });
+
+        saldos.push(filas[0]);
+        buscarSaldos(id_empleado, anios, i + 1, saldos, callback);
+    });
+}
+
+// descuenta los dias en el saldo de cada año
+function descontarSaldos(saldos, anios, porAnio, i, callback) {
+    if (i >= saldos.length) return callback(null);
+
+    const saldo = saldos[i];
+
+    SaldoVacaciones.actualizar(saldo.id_saldo, {
+        dias_asignados: saldo.dias_asignados,
+        dias_utilizados: saldo.dias_utilizados + porAnio[anios[i]]
+    }, err => {
+        if (err) return callback(err);
+        descontarSaldos(saldos, anios, porAnio, i + 1, callback);
+    });
+}
+
 function finalizarSolicitud(id_solicitud, callback) {
     Solicitud.obtenerPorId(id_solicitud, (err, solicitudes) => {
         if (err || !solicitudes.length)
@@ -504,49 +553,33 @@ function finalizarSolicitud(id_solicitud, callback) {
         const inicio = new Date(solicitud.fecha_inicio);
         const fin = new Date(solicitud.fecha_fin);
         const dias = contarDiasHabiles(inicio, fin);
-        const anio = inicio.getFullYear();
+        const porAnio = diasPorAnio(inicio, fin);
+        const anios = Object.keys(porAnio).map(Number);
 
-        SaldoVacaciones.obtenerPorEmpleadoAnio(
-            solicitud.id_empleado,
-            anio,
-            (err, saldos) => {
-                if (err || !saldos.length)
-                    return callback({ status: 500, mensaje: 'No se pudo consultar el saldo de vacaciones' });
+        buscarSaldos(solicitud.id_empleado, anios, 0, [], (err, saldos) => {
+            if (err) return callback(err);
 
-                const saldo = saldos[0];
-                const nuevosDias = saldo.dias_utilizados + dias;
+            // primero se revisa que alcance en todos los años
+            const alcanza = anios.every((anio, i) =>
+                saldos[i].dias_utilizados + porAnio[anio] <= saldos[i].dias_asignados);
 
-                if (nuevosDias > saldo.dias_asignados)
-                    return Solicitud.actualizarEstado(id_solicitud, 'Rechazada', () =>
-                        callback({ status: 400, mensaje: 'Saldo insuficiente: la solicitud fue rechazada automáticamente' }));
+            if (!alcanza)
+                return Solicitud.actualizarEstado(id_solicitud, 'Rechazada', () =>
+                    callback({ status: 400, mensaje: 'Saldo insuficiente: la solicitud fue rechazada automáticamente' }));
 
-                SaldoVacaciones.actualizar(
-                    saldo.id_saldo,
-                    {
-                        dias_asignados: saldo.dias_asignados,
-                        dias_utilizados: nuevosDias
-                    },
-                    err => {
-                        if (err)
-                            return callback({ status: 500, mensaje: 'No se pudo descontar el saldo de vacaciones' });
+            descontarSaldos(saldos, anios, porAnio, 0, err => {
+                if (err) return callback({ status: 500, mensaje: 'No se pudo descontar el saldo de vacaciones' });
 
-                        Solicitud.actualizarEstado(
-                            id_solicitud,
-                            'Aprobada',
-                            err => {
-                                if (err)
-                                    return callback({ status: 500, mensaje: 'No se pudo finalizar la solicitud' });
+                Solicitud.actualizarEstado(id_solicitud, 'Aprobada', err => {
+                    if (err) return callback({ status: 500, mensaje: 'No se pudo finalizar la solicitud' });
 
-                                callback(null, {
-                                    mensaje: 'Solicitud aprobada y días de vacaciones descontados',
-                                    diasDescontados: dias
-                                });
-                            }
-                        );
-                    }
-                );
-            }
-        );
+                    callback(null, {
+                        mensaje: 'Solicitud aprobada y días de vacaciones descontados',
+                        diasDescontados: dias
+                    });
+                });
+            });
+        });
     });
 }
 
