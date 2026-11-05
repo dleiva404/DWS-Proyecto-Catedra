@@ -72,12 +72,13 @@
                             <th>Motivo</th>
                             <th>Estado</th>
                             <th>Adjunto</th>
+                            <th>Detalle</th>
                         </tr>
                     </thead>
 
                     <tbody id="tablaSolicitudes">
                         <tr>
-                            <td colspan="8">Cargando solicitudes...</td>
+                            <td colspan="9">Cargando solicitudes...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -133,6 +134,32 @@
 
             </form>
 
+        </div>
+    </div>
+
+        <div id="modalHistorial" class="modal oculto">
+        <div class="modal-contenido modal-historial">
+            <button id="cerrarHistorial" class="cerrar">×</button>
+
+            <h2>Historial de la solicitud <span id="historialId"></span></h2>
+            <p class="subtitulo" id="historialResumen"></p>
+
+            <div class="tabla-contenedor">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Etapa</th>
+                            <th>Estado</th>
+                            <th>Responsable</th>
+                            <th>Fecha</th>
+                            <th>Comentario</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tablaHistorial"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 

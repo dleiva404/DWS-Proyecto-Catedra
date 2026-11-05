@@ -1,3 +1,4 @@
+const fs = require('fs');
 const SolicitudService = require('../services/solicitudService');
 
 const obtenerMisSolicitudes = (req, res) => {
@@ -53,6 +54,9 @@ const crearSolicitud = (req, res) => {
         },
         (error, resultado) => {
             if (error) {
+
+                if (req.file) fs.unlink(req.file.path, () => { });
+
                 return res.status(error.status || 500).json({
                     error: error.mensaje
                 });
@@ -63,6 +67,8 @@ const crearSolicitud = (req, res) => {
 };
 
 const resolverEtapa = (req, res) => {
+    if (!/^\d+$/.test(req.params.id))
+        return res.status(400).json({ error: 'El ID de la etapa no es válido' });
     SolicitudService.resolverEtapa(
         req.params.id,
         obtenerIdRol(req.usuario.rol),

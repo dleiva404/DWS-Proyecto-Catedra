@@ -26,6 +26,10 @@ if (rolesEmpleados.includes(usuario.rol)) {
     document.getElementById('navEmpleados').style.display = '';
 }
 
+if (['Analista de Nómina', 'Gerente', 'Asistente de planilla'].includes(usuario.rol)) {
+    document.getElementById('navReportes').style.display = '';
+}
+
 document.getElementById('nombreBienvenida').textContent = nombre;
 
 async function cargarSolicitudes() {

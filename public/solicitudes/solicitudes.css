@@ -326,7 +326,8 @@ td {
     left: 0;
     right: 0;
     height: 6px;
-    background: linear-gradient(90deg, #2563eb, #1e293b);
+    background: #2563eb;
+
 }
 
 .modal-contenido h2 {
@@ -515,3 +516,13 @@ textarea {
     color: #ffffff;
     border-color: #2563eb;
 }
+
+.modal-historial {
+    max-width: 950px;
+}
+
+.estado-bloqueada {
+    background: #f1f5f9;
+    color: #64748b;
+}
+

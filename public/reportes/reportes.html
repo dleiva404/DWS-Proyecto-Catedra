@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Grupo Calma - Reportes</title>
+    <link rel="stylesheet" href="../solicitudes/solicitudes.css">
+    <link rel="stylesheet" href="reportes.css">
+</head>
+
+<body>
+
+    <header class="header">
+        <div class="logo-area">
+            <img src="../assets/logo.png" alt="Invercalma - Grupo Calma" class="logo">
+        </div>
+
+        <nav class="nav">
+            <a href="/dashboard/dashboard.html">Dashboard</a>
+            <a href="/solicitudes/solicitudes.html">Mis Solicitudes</a>
+            <a href="/reportes/reportes.html" class="activo">Reportes</a>
+        </nav>
+
+        <div class="usuario-area">
+            <span>♙</span>
+            <strong id="nombreUsuario">Usuario</strong>
+            <button id="cerrarSesion">Salir</button>
+        </div>
+    </header>
+
+    <main class="contenido">
+
+        <div class="titulo">
+            <div>
+                <h1>Reportes</h1>
+                <p>Resumen de solicitudes y saldos de vacaciones.</p>
+            </div>
+        </div>
+
+        <section class="panel filtros">
+            <div class="campo">
+                <label for="filtroDesde">Desde</label>
+                <input type="date" id="filtroDesde">
+            </div>
+
+            <div class="campo">
+                <label for="filtroHasta">Hasta</label>
+                <input type="date" id="filtroHasta">
+            </div>
+
+            <div class="campo">
+                <label for="filtroTipo">Tipo</label>
+                <select id="filtroTipo">
+                    <option value="">Todos</option>
+                    <option value="1">Vacaciones</option>
+                    <option value="2">Permiso</option>
+                </select>
+            </div>
+
+            <div class="botones-filtro">
+                <button id="btnFiltrar" class="btn-filtrar">Aplicar</button>
+                <button id="btnLimpiar" class="btn-limpiar">Limpiar</button>
+            </div>
+        </section>
+
+        <div id="mensajeGeneral" class="mensaje"></div>
+
+        <section class="estadisticas reportes-totales">
+            <div class="estadistica pendiente">
+                <strong id="totalPendientes">0</strong>
+                <span>Pendientes</span>
+            </div>
+
+            <div class="estadistica aprobada">
+                <strong id="totalAprobadas">0</strong>
+                <span>Aprobadas</span>
+            </div>
+
+            <div class="estadistica rechazada">
+                <strong id="totalRechazadas">0</strong>
+                <span>Rechazadas</span>
+            </div>
+
+            <div class="estadistica dias">
+                <strong id="totalDias">0</strong>
+                <span>Días de vacaciones usados</span>
+            </div>
+        </section>
+
+        <section class="graficos">
+            <div class="panel">
+                <h2>Solicitudes por estado</h2>
+                <div class="grafico-contenedor">
+                    <canvas id="graficoEstado"></canvas>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>Solicitudes por mes</h2>
+                <div class="grafico-contenedor">
+                    <canvas id="graficoMes"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>Saldo de vacaciones <span id="anioSaldos"></span></h2>
+
+            <div class="tabla-contenedor">
+                <table id="tablaReporteSaldos">
+                    <thead>
+                        <tr>
+                            <th>Empleado</th>
+                            <th>Cargo</th>
+                            <th>Asignados</th>
+                            <th>Utilizados</th>
+                            <th>Disponibles</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tablaSaldos">
+                        <tr>
+                            <td colspan="5">Cargando...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="panel seccion-todas">
+            <h2>Todas las solicitudes <span id="totalTodas"></span></h2>
+
+            <div class="tabla-contenedor">
+                <table id="tablaReporteSolicitudes">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Empleado</th>
+                        <th>Tipo</th>
+                        <th>Fecha solicitud</th>
+                        <th>Inicio</th>
+                        <th>Fin</th>
+                        <th>Estado</th>
+                        <th>Etapa actual</th>
+                        <th>Detalle</th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="tablaTodas">
+                    <tr>
+                        <td colspan="9">Cargando...</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="modalHistorial" class="modal oculto">
+        <div class="modal-contenido modal-historial">
+            <button id="cerrarHistorial" class="cerrar">×</button>
+
+            <h2>Historial de la solicitud <span id="historialId"></span></h2>
+            <p class="subtitulo" id="historialResumen"></p>
+
+            <div class="tabla-contenedor">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Etapa</th>
+                        <th>Estado</th>
+                        <th>Responsable</th>
+                        <th>Fecha</th>
+                        <th>Comentario</th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="tablaHistorial"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="reportes.js"></script>
+</body>
+
+</html>

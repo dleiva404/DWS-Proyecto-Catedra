@@ -240,6 +240,42 @@ INSERT INTO saldo_vacaciones
 (id_empleado, anio, dias_asignados, dias_utilizados)
 VALUES
 (1, 2026, 15, 0),
-(2, 2026, 15, 0),
+(2, 2026, 15, 3),
 (3, 2026, 15, 0),
-(4, 2026, 15, 0);
+(4, 2026, 15, 3),
+(1, 2027, 15, 0),
+(2, 2027, 15, 0),
+(3, 2027, 15, 0),
+(4, 2027, 15, 0);
+
+-- =====================================================
+-- DATOS DE PRUEBA: SOLICITUDES DE EJEMPLO
+-- =====================================================
+
+INSERT INTO solicitud
+(id_empleado, id_tipo_solicitud, fecha_solicitud, fecha_inicio, fecha_fin, motivo, estado)
+VALUES
+(2, 1, '2026-09-01 09:00:00', '2026-09-14', '2026-09-16', NULL, 'Aprobada'),
+(1, 2, '2026-09-20 10:00:00', '2026-09-25', '2026-09-25', 'Cita en el banco', 'Rechazada'),
+(2, 2, '2026-10-05 08:30:00', '2026-10-09', '2026-10-09', 'Cita medica', 'Aprobada'),
+(4, 1, '2026-10-12 14:00:00', '2026-10-26', '2026-10-28', NULL, 'Aprobada'),
+(3, 2, '2026-10-15 11:00:00', '2026-10-20', '2026-10-20', 'Tramite personal', 'Rechazada');
+
+INSERT INTO etapa_solicitud
+(id_solicitud, id_rol, nombre_etapa, orden, estado, fecha_inicio, fecha_resolucion, decision, comentario, id_usuario_responsable)
+VALUES
+-- vacaciones de Juan: Analista -> Gerente -> Jefe
+(1, 3, 'Analista de Nómina', 1, 'Aprobada', '2026-09-01 09:00:00', '2026-09-02 10:00:00', 'Aprobada', NULL, 3),
+(1, 4, 'Gerente', 2, 'Aprobada', '2026-09-02 10:00:00', '2026-09-03 09:00:00', 'Aprobada', NULL, 4),
+(1, 2, 'Jefe inmediato', 3, 'Aprobada', '2026-09-03 09:00:00', '2026-09-03 15:00:00', 'Aprobada', NULL, 2),
+-- permiso de Carlos (no tiene jefe): solo Analista
+(2, 3, 'Analista de Nómina', 1, 'Rechazada', '2026-09-20 10:00:00', '2026-09-21 08:00:00', 'Rechazada', 'Falta el comprobante de la cita', 3),
+-- permiso de Juan: Jefe -> Analista
+(3, 2, 'Jefe inmediato', 1, 'Aprobada', '2026-10-05 08:30:00', '2026-10-05 13:00:00', 'Aprobada', NULL, 2),
+(3, 3, 'Analista de Nómina', 2, 'Aprobada', '2026-10-05 13:00:00', '2026-10-06 09:00:00', 'Aprobada', NULL, 3),
+-- vacaciones de Gabriela: Analista -> Jefe
+(4, 3, 'Analista de Nómina', 1, 'Aprobada', '2026-10-12 14:00:00', '2026-10-13 10:00:00', 'Aprobada', NULL, 3),
+(4, 2, 'Jefe inmediato', 2, 'Aprobada', '2026-10-13 10:00:00', '2026-10-14 08:00:00', 'Aprobada', NULL, 2),
+-- permiso de Ana: Jefe -> Gerente, rechazado por el jefe
+(5, 2, 'Jefe inmediato', 1, 'Rechazada', '2026-10-15 11:00:00', '2026-10-15 16:00:00', 'Rechazada', 'Coincide con el cierre de planilla', 2),
+(5, 4, 'Gerente (revisión final)', 2, 'Bloqueada', NULL, NULL, NULL, NULL, NULL);

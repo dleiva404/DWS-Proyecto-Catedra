@@ -152,7 +152,7 @@ async function cargarSolicitudes() {
         }
 
         if (respuesta.status === 400) {
-            document.getElementById('tablaSolicitudes').innerHTML = '<tr><td colspan="8">Tu usuario no está registrado como empleado, por eso no tiene solicitudes propias.</td></tr>';
+            document.getElementById('tablaSolicitudes').innerHTML = '<tr><td colspan="9">Tu usuario no está registrado como empleado, por eso no tiene solicitudes propias.</td></tr>';
             return;
         }
 
@@ -167,7 +167,7 @@ async function cargarSolicitudes() {
         const tabla = document.getElementById('tablaSolicitudes');
 
         if (!solicitudes.length) {
-            tabla.innerHTML = '<tr><td colspan="8">No tienes solicitudes registradas.</td></tr>';
+            tabla.innerHTML = '<tr><td colspan="9">No tienes solicitudes registradas.</td></tr>';
             return;
         }
 
@@ -185,12 +185,13 @@ async function cargarSolicitudes() {
                     <td>${formatearFecha(s.fecha_fin)}</td>
                     <td>${s.motivo ? escaparHTML(s.motivo) : '-'}</td>
                     <td><span class="estado estado-${estado}">${s.estado}</span></td>
+                    <td><button type="button" class="btn-adjunto btn-historial" data-id="${s.id_solicitud}">Ver historial</button></td>
                     <td>${s.archivo_adjunto ? `<button type="button" class="btn-adjunto" data-id="${s.id_solicitud}">Ver archivo</button>` : '-'}</td>
                 </tr>`;
         }).join('');
 
     } catch (error) {
-        document.getElementById('tablaSolicitudes').innerHTML = '<tr><td colspan="8">No se pudieron cargar las solicitudes.</td></tr>';
+        document.getElementById('tablaSolicitudes').innerHTML = '<tr><td colspan="9">No se pudieron cargar las solicitudes.</td></tr>';
     }
 }
 
@@ -277,9 +278,70 @@ actualizarFormulario();
 cargarSolicitudes();
 
 document.getElementById('tablaSolicitudes').addEventListener('click', e => {
+    const botonHistorial = e.target.closest('.btn-historial');
+
+    if (botonHistorial) {
+        verHistorial(botonHistorial.dataset.id);
+        return;
+    }
+
     const boton = e.target.closest('.btn-adjunto');
 
     if (boton) {
         abrirAdjunto(boton.dataset.id);
     }
+});
+
+async function verHistorial(id) {
+    const modalHistorial = document.getElementById('modalHistorial');
+    const tablaHistorial = document.getElementById('tablaHistorial');
+    const resumen = document.getElementById('historialResumen');
+
+    document.getElementById('historialId').textContent = '#' + id;
+    resumen.textContent = '';
+    tablaHistorial.innerHTML = '<tr><td colspan="6">Cargando...</td></tr>';
+    modalHistorial.classList.remove('oculto');
+
+    try {
+        const respuesta = await fetch(`/api/solicitudes/${id}/historial`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) throw new Error(datos.error || 'No se pudo cargar el historial.');
+
+        const pendiente = datos.etapas.find(etapa => etapa.estado === 'Pendiente');
+
+        resumen.textContent = pendiente
+            ? 'En espera de: ' + pendiente.nombre_etapa
+            : 'Estado final: ' + datos.solicitud.estado;
+
+        if (!datos.etapas.length) {
+            tablaHistorial.innerHTML = '<tr><td colspan="6">Esta solicitud no tiene etapas registradas.</td></tr>';
+            return;
+        }
+
+        tablaHistorial.innerHTML = datos.etapas.map(etapa => `
+            <tr>
+                <td>${etapa.orden}</td>
+                <td>${escaparHTML(etapa.nombre_etapa)}</td>
+                <td><span class="estado estado-${etapa.estado.toLowerCase()}">${etapa.estado}</span></td>
+                <td>${etapa.responsable ? escaparHTML(etapa.responsable) : '-'}</td>
+                <td>${formatearFecha(etapa.fecha_resolucion)}</td>
+                <td>${etapa.comentario ? escaparHTML(etapa.comentario) : '-'}</td>
+            </tr>
+        `).join('');
+
+    } catch (error) {
+        tablaHistorial.innerHTML = `<tr><td colspan="6">${escaparHTML(error.message)}</td></tr>`;
+    }
+}
+
+document.getElementById('cerrarHistorial').addEventListener('click', () => {
+    document.getElementById('modalHistorial').classList.add('oculto');
+});
+
+document.getElementById('modalHistorial').addEventListener('click', e => {
+    if (e.target.id === 'modalHistorial') e.target.classList.add('oculto');
 });
