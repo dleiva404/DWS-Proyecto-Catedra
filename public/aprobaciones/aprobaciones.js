@@ -33,7 +33,7 @@ async function cargarPendientes() {
         const pendientes = await respuesta.json();
 
         if (!pendientes.length) {
-            tabla.innerHTML = '<tr><td colspan="8">No tienes solicitudes pendientes de revisar.</td></tr>';
+            tabla.innerHTML = '<tr><td colspan="9">No tienes solicitudes pendientes de revisar.</td></tr>';
             return;
         }
 
@@ -46,7 +46,7 @@ async function cargarPendientes() {
                 <td>${formatearFecha(p.fecha_inicio)}</td>
                 <td>${formatearFecha(p.fecha_fin)}</td>
                 <td>${p.motivo ? escaparHTML(p.motivo) : '-'}</td>
-                <td>
+                <td>${p.archivo_adjunto? '<button class="btn-adjunto" data-id="' + p.id_solicitud + '">Ver archivo</button>': '-'}</td><td>
                     <div class="acciones">
                         <button class="btn-aprobar" data-etapa="${p.id_etapa_solicitud}">Aprobar</button>
                         <button class="btn-rechazar" data-etapa="${p.id_etapa_solicitud}">Rechazar</button>
@@ -55,11 +55,19 @@ async function cargarPendientes() {
             </tr>`).join('');
 
     } catch (error) {
-        tabla.innerHTML = '<tr><td colspan="8">No se pudieron cargar las solicitudes pendientes.</td></tr>';
+        tabla.innerHTML = '<tr><td colspan="9">No se pudieron cargar las solicitudes pendientes.</td></tr>';
     }
 }
 
 tabla.addEventListener('click', e => {
+
+    const botonAdjunto = e.target.closest('.btn-adjunto');
+
+    if (botonAdjunto) {
+        abrirAdjunto(botonAdjunto.dataset.id);
+        return;
+    }
+
     const id = e.target.dataset.etapa;
     if (!id) return;
 
@@ -114,6 +122,39 @@ async function resolver(idEtapa, decision, motivoRechazo) {
         mostrarMensaje(error.message, 'error');
         cargarPendientes();
         return false;
+    }
+}
+
+async function abrirAdjunto(id) {
+    const nuevaVentana = window.open('', '_blank');
+
+    try {
+        const respuesta = await fetch(`/api/solicitudes/${id}/archivo`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (!respuesta.ok) {
+            const resultado = await respuesta.json();
+            throw new Error(resultado.error || 'No se pudo abrir el archivo.');
+        }
+
+        const archivo = await respuesta.blob();
+        const url = URL.createObjectURL(archivo);
+
+        if (nuevaVentana) {
+            nuevaVentana.location.href = url;
+        } else {
+            URL.revokeObjectURL(url);
+            throw new Error('Permite las ventanas emergentes para ver el archivo.');
+        }
+
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+
+    } catch (error) {
+        if (nuevaVentana) nuevaVentana.close();
+        alert(error.message);
     }
 }
 
