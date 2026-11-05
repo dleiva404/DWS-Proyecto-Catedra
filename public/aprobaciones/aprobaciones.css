@@ -139,7 +139,7 @@ body {
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #1e293b, #3b82f6);
+    background: #2563eb;
 }
 
 .panel h2 {
