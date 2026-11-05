@@ -84,6 +84,8 @@ CREATE TABLE solicitud (
     fecha_fin DATE NULL,
     motivo VARCHAR(500) NULL,
     estado VARCHAR(30) NOT NULL,
+    archivo_adjunto VARCHAR(255) NULL,
+
 
     CONSTRAINT fk_solicitud_empleado
         FOREIGN KEY (id_empleado)
