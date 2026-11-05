@@ -88,6 +88,32 @@
         </div>
     </div>
 
+    <div id="modalHistorial" class="modal oculto">
+        <div class="modal-contenido modal-historial">
+            <button id="cerrarHistorial" class="cerrar">×</button>
+
+            <h2>Historial de la solicitud <span id="historialId"></span></h2>
+            <p class="subtitulo" id="historialResumen"></p>
+
+            <div class="tabla-contenedor">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Etapa</th>
+                            <th>Estado</th>
+                            <th>Responsable</th>
+                            <th>Fecha</th>
+                            <th>Comentario</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tablaHistorial"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <script src="aprobaciones.js"></script>
 </body>
 

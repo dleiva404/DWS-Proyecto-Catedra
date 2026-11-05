@@ -51,24 +51,37 @@ const SolicitudService = {
     },
 
     // Historial de una solicitud
-    obtenerHistorial: (id_solicitud, usuario, callback) => {
-        Solicitud.obtenerPorId(id_solicitud, (err, solicitudes) => {
-            if (err) return callback({ status: 500, mensaje: 'Error al consultar la solicitud' });
-            if (!solicitudes.length) return callback({ status: 404, mensaje: 'Solicitud no encontrada' });
+        obtenerHistorial: (id_solicitud, usuario, callback) => {
+            Solicitud.obtenerPorId(id_solicitud, (err, solicitudes) => {
+                if (err) return callback({ status: 500, mensaje: 'Error al consultar la solicitud' });
+                if (!solicitudes.length) return callback({ status: 404, mensaje: 'Solicitud no encontrada' });
 
-            const solicitud = solicitudes[0];
-            const esDueno = Number(solicitud.id_empleado) === Number(usuario.id_empleado);
-            const esRRHH = ['Asistente de planilla', 'Analista de Nómina', 'Gerente'].includes(usuario.rol);
+                const solicitud = solicitudes[0];
+                const esDueno = Number(solicitud.id_empleado) === Number(usuario.id_empleado);
+                const esRRHH = ['Asistente de planilla', 'Analista de Nómina', 'Gerente'].includes(usuario.rol);
 
-            if (!esDueno && !esRRHH)
-                return callback({ status: 403, mensaje: 'No tiene permisos para ver esta solicitud' });
+                const enviarHistorial = () => {
+                    EtapaSolicitud.obtenerHistorial(id_solicitud, (err, etapas) => {
+                        if (err) return callback({ status: 500, mensaje: 'Error al consultar el historial' });
+                        callback(null, { solicitud, etapas });
+                    });
+                };
 
-            EtapaSolicitud.obtenerHistorial(id_solicitud, (err, etapas) => {
-                if (err) return callback({ status: 500, mensaje: 'Error al consultar el historial' });
-                callback(null, { solicitud, etapas });
+                if (esDueno || esRRHH) return enviarHistorial();
+
+                // El jefe inmediato puede ver el historial de su personal a cargo
+                if (usuario.rol === 'Jefe inmediato') {
+                    return AuthService.esJefeDe(usuario.id_empleado, solicitud.id_empleado)
+                        .then(esJefe => {
+                            if (!esJefe) return callback({ status: 403, mensaje: 'No tiene permisos para ver esta solicitud' });
+                            enviarHistorial();
+                        })
+                        .catch(() => callback({ status: 500, mensaje: 'Error al validar el jefe inmediato' }));
+                }
+
+                callback({ status: 403, mensaje: 'No tiene permisos para ver esta solicitud' });
             });
-        });
-    },
+        },
 
     verificarAccesoAdjunto: (id_solicitud, usuario, callback) => {
         Solicitud.obtenerPorId(id_solicitud, (err, solicitudes) => {
