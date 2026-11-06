@@ -293,7 +293,7 @@ td {
 
 @media(max-width:950px) {
     .dashboard-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
     .panel {
         min-height: auto;
