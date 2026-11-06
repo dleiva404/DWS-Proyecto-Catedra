@@ -250,4 +250,70 @@ function salirSinSesion() {
 }
 
 document.getElementById('btnFiltrar').addEventListener('click', () => {
-    if (fil
+    if (filtroDesde.value && filtroHasta.value && filtroDesde.value > filtroHasta.value) {
+        mostrarMensaje('La fecha "desde" no puede ser mayor que la fecha "hasta"', 'error');
+        return;
+    }
+    cargarReporte();
+});
+
+document.getElementById('btnLimpiar').addEventListener('click', () => {
+    filtroDesde.value = '';
+    filtroHasta.value = '';
+    filtroTipo.value = '';
+    cargarReporte();
+});
+
+document.getElementById('cerrarSesion').addEventListener('click', async () => {
+    try {
+        await fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` }
+        });
+    } catch (e) {
+    }
+
+    salirSinSesion();
+});
+
+document.getElementById('tablaTodas').addEventListener('click', e => {
+    const boton = e.target.closest('.btn-historial');
+    if (boton) verHistorial(boton.dataset.id);
+});
+
+document.getElementById('cerrarHistorial').addEventListener('click', () => {
+    document.getElementById('modalHistorial').classList.add('oculto');
+});
+
+document.getElementById('modalHistorial').addEventListener('click', e => {
+    if (e.target.id === 'modalHistorial') e.target.classList.add('oculto');
+});
+
+cargarReporte();
+
+function resumenReporte() {
+    return [
+        { texto: 'Pendientes', valor: document.getElementById('totalPendientes').textContent, color: [217, 119, 6] },
+        { texto: 'Aprobadas', valor: document.getElementById('totalAprobadas').textContent, color: [5, 150, 105] },
+        { texto: 'Rechazadas', valor: document.getElementById('totalRechazadas').textContent, color: [220, 38, 38] },
+        { texto: 'Días usados', valor: document.getElementById('totalDias').textContent, color: [37, 99, 235] }
+    ];
+}
+
+function exportarExcel() {
+    generarExcel('Reporte de solicitudes - Grupo Calma', 'Reporte_RRHH_GrupoCalma', [
+        { hoja: 'Solicitudes', idTabla: 'tablaReporteSolicitudes' },
+        { hoja: 'Saldos', idTabla: 'tablaReporteSaldos' }
+    ]);
+}
+
+function exportarPDF() {
+    generarPDF('Reporte de solicitudes', 'Reporte_RRHH_GrupoCalma', {
+        resumen: resumenReporte(),
+        graficos: ['graficoEstado', 'graficoMes'],
+        tablas: [
+            { titulo: 'Todas las solicitudes', idTabla: 'tablaReporteSolicitudes' },
+            { titulo: 'Saldo de vacaciones', idTabla: 'tablaReporteSaldos' }
+        ]
+    });
+}

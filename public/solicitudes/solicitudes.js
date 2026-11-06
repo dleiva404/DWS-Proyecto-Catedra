@@ -218,8 +218,8 @@ async function cargarSolicitudes() {
                     <td>${formatearFecha(s.fecha_fin)}</td>
                     <td>${s.motivo ? escaparHTML(s.motivo) : '-'}</td>
                     <td><span class="estado estado-${estado}">${s.estado}</span></td>
-                    <td><button type="button" class="btn-adjunto btn-historial" data-id="${s.id_solicitud}">Ver historial</button></td>
                     <td>${s.archivo_adjunto ? `<button type="button" class="btn-adjunto" data-id="${s.id_solicitud}">Ver archivo</button>` : '-'}</td>
+                    <td><button type="button" class="btn-adjunto btn-historial" data-id="${s.id_solicitud}">Ver historial</button></td>
                 </tr>`;
         }).join('');
 
@@ -379,51 +379,14 @@ document.getElementById('modalHistorial').addEventListener('click', e => {
     if (e.target.id === 'modalHistorial') e.target.classList.add('oculto');
 });
 
-// ==========================================
-// FUNCIONES DE EXPORTACIÓN (EXCEL Y PDF)
-// ==========================================
-
 function exportarExcelSolicitudes() {
-    const tabla = document.getElementById('tablaMisSolicitudes');
-    if (!tabla) {
-        alert('No se encontró la tabla de mis solicitudes para exportar.');
-        return;
-    }
-    const wb = XLSX.utils.table_to_book(tabla, { sheet: "Mis Solicitudes" });
-    XLSX.writeFile(wb, 'Mis_Solicitudes_GrupoCalma.xlsx');
+    generarExcel('Mis solicitudes - Grupo Calma', 'Mis_Solicitudes_GrupoCalma', [
+        { hoja: 'Mis solicitudes', idTabla: 'tablaMisSolicitudes' }
+    ]);
 }
 
 function exportarPDFSolicitudes() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    const img = new Image();
-    img.src = '../assets/logo.png';
-
-    img.onload = function() {
-        doc.addImage(img, 'PNG', 14, 8, 35, 12);
-        doc.setFontSize(13);
-        doc.text("Mis Solicitudes de Recursos Humanos - Grupo Calma", 52, 16);
-
-        doc.autoTable({
-            html: '#tablaMisSolicitudes',
-            startY: 26,
-            theme: 'grid',
-            styles: { fontSize: 7 }
-        });
-
-        doc.save('Mis_Solicitudes_GrupoCalma.pdf');
-    };
-
-    img.onerror = function() {
-        doc.setFontSize(14);
-        doc.text("Mis Solicitudes de Recursos Humanos - Grupo Calma", 14, 15);
-        doc.autoTable({
-            html: '#tablaMisSolicitudes',
-            startY: 22,
-            theme: 'grid',
-            styles: { fontSize: 7 }
-        });
-        doc.save('Mis_Solicitudes_GrupoCalma.pdf');
-    };
+    generarPDF('Mis solicitudes', 'Mis_Solicitudes_GrupoCalma', {
+        tablas: [{ idTabla: 'tablaMisSolicitudes' }]
+    });
 }
