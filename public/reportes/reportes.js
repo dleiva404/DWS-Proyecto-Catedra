@@ -290,3 +290,30 @@ document.getElementById('modalHistorial').addEventListener('click', e => {
 });
 
 cargarReporte();
+
+function resumenReporte() {
+    return [
+        { texto: 'Pendientes', valor: document.getElementById('totalPendientes').textContent, color: [217, 119, 6] },
+        { texto: 'Aprobadas', valor: document.getElementById('totalAprobadas').textContent, color: [5, 150, 105] },
+        { texto: 'Rechazadas', valor: document.getElementById('totalRechazadas').textContent, color: [220, 38, 38] },
+        { texto: 'Días usados', valor: document.getElementById('totalDias').textContent, color: [37, 99, 235] }
+    ];
+}
+
+function exportarExcel() {
+    generarExcel('Reporte de solicitudes - Grupo Calma', 'Reporte_RRHH_GrupoCalma', [
+        { hoja: 'Solicitudes', idTabla: 'tablaReporteSolicitudes' },
+        { hoja: 'Saldos', idTabla: 'tablaReporteSaldos' }
+    ]);
+}
+
+function exportarPDF() {
+    generarPDF('Reporte de solicitudes', 'Reporte_RRHH_GrupoCalma', {
+        resumen: resumenReporte(),
+        graficos: ['graficoEstado', 'graficoMes'],
+        tablas: [
+            { titulo: 'Todas las solicitudes', idTabla: 'tablaReporteSolicitudes' },
+            { titulo: 'Saldo de vacaciones', idTabla: 'tablaReporteSaldos' }
+        ]
+    });
+}

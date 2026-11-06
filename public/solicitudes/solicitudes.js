@@ -88,6 +88,39 @@ form.addEventListener('submit', async e => {
         return;
     }
 
+    // Validacion para fechas en blanco si es Vacaciones o Permiso
+    if ((valor === '1' || valor === '2') && (!fechaInicio.value || !fechaFin.value)) {
+        mostrarMensaje('Por favor, completa las fechas de inicio y fin.', 'error');
+        return;
+    }
+
+    // Validacion si la fecha de inicio es anterior a hoy
+    if (fechaInicio.value) {
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+        const inicio = new Date(fechaInicio.value + 'T00:00:00');
+        if (inicio < hoy) {
+            mostrarMensaje('La fecha de inicio no puede ser anterior a hoy', 'error');
+            return;
+        }
+    }
+
+    // Validacion para fecha fin menor que fecha inicio
+    if (fechaInicio.value && fechaFin.value) {
+        const inicio = new Date(fechaInicio.value + 'T00:00:00');
+        const fin = new Date(fechaFin.value + 'T00:00:00');
+        if (fin < inicio) {
+            mostrarMensaje('La fecha de fin no puede ser menor que la fecha de inicio.', 'error');
+            return;
+        }
+    }
+
+    // Validacion para Permiso que requiere Motivo obligatoriamente
+    if (valor === '2' && !motivo.value.trim()) {
+        mostrarMensaje('El motivo es obligatorio para este tipo de solicitud.', 'error');
+        return;
+    }
+
     mostrarMensaje('Creando solicitud...', '');
 
     const datos = new FormData();
@@ -185,8 +218,8 @@ async function cargarSolicitudes() {
                     <td>${formatearFecha(s.fecha_fin)}</td>
                     <td>${s.motivo ? escaparHTML(s.motivo) : '-'}</td>
                     <td><span class="estado estado-${estado}">${s.estado}</span></td>
-                    <td><button type="button" class="btn-adjunto btn-historial" data-id="${s.id_solicitud}">Ver historial</button></td>
                     <td>${s.archivo_adjunto ? `<button type="button" class="btn-adjunto" data-id="${s.id_solicitud}">Ver archivo</button>` : '-'}</td>
+                    <td><button type="button" class="btn-adjunto btn-historial" data-id="${s.id_solicitud}">Ver historial</button></td>
                 </tr>`;
         }).join('');
 
@@ -345,3 +378,15 @@ document.getElementById('cerrarHistorial').addEventListener('click', () => {
 document.getElementById('modalHistorial').addEventListener('click', e => {
     if (e.target.id === 'modalHistorial') e.target.classList.add('oculto');
 });
+
+function exportarExcelSolicitudes() {
+    generarExcel('Mis solicitudes - Grupo Calma', 'Mis_Solicitudes_GrupoCalma', [
+        { hoja: 'Mis solicitudes', idTabla: 'tablaMisSolicitudes' }
+    ]);
+}
+
+function exportarPDFSolicitudes() {
+    generarPDF('Mis solicitudes', 'Mis_Solicitudes_GrupoCalma', {
+        tablas: [{ idTabla: 'tablaMisSolicitudes' }]
+    });
+}
