@@ -94,8 +94,8 @@ form.addEventListener('submit', async e => {
         return;
     }
 
-    // Validacion si la fecha de inicio es anterior a hoy
-    if (fechaInicio.value) {
+    // Vacaciones la fecha de inicio no puede ser fecha anterior
+    if (valor === '1' && fechaInicio.value) {
         const hoy = new Date();
         hoy.setHours(0, 0, 0, 0);
         const inicio = new Date(fechaInicio.value + 'T00:00:00');

@@ -179,6 +179,7 @@ h1 {
 }
 
 .btn-accion-editar {
+    margin-left: 8px;
     border: 1px solid #bfdbfe;
     background: #ffffff;
     color: #1d4ed8;
@@ -325,6 +326,11 @@ td {
 th {
     background: #f8fafc;
     color: #334155;
+}
+
+/* los botones de acciones en una sola linea */
+td:last-child {
+    white-space: nowrap;
 }
 
 .texto-vacio {

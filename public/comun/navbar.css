@@ -1,0 +1,81 @@
+/* encabezado adaptable, igual en todas las pantallas */
+@media (max-width: 1150px) {
+    .header {
+        flex-wrap: wrap;
+        padding: 10px 20px;
+        gap: 10px;
+    }
+
+    .logo-area {
+        width: auto;
+        height: 60px;
+    }
+
+    .logo {
+        width: 200px;
+        height: 55px;
+    }
+
+    /* el usuario queda a la derecha del logo */
+    .usuario-area {
+        order: 2;
+        margin-left: auto;
+        border-left: none;
+        padding-left: 0;
+        height: auto;
+    }
+
+    /* el menu baja a su propia fila */
+    .nav {
+        order: 3;
+        width: 100%;
+        margin-left: 0;
+        flex-wrap: wrap;
+        overflow: visible;
+        gap: 8px;
+    }
+
+    .nav a {
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 600px) {
+    .logo-area {
+        width: 100%;
+        height: auto;
+        justify-content: center;
+    }
+
+    .logo {
+        width: 180px;
+        height: 50px;
+        object-position: center;
+    }
+
+    .usuario-area {
+        width: 100%;
+        margin-left: 0;
+        justify-content: space-between;
+    }
+
+    .usuario-area > span {
+        display: none;
+    }
+
+    /* dos botones por fila */
+    .nav a {
+        flex: 1 1 calc(50% - 8px);
+        text-align: center;
+        padding: 9px 6px;
+        font-size: 13px;
+    }
+}
+
+/* en celular las tablas se deslizan de lado en vez de partir los nombres */
+@media (max-width: 600px) {
+    .tabla-contenedor th,
+    .tabla-contenedor td {
+        white-space: nowrap;
+    }
+}

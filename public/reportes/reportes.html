@@ -7,6 +7,7 @@
     <title>Grupo Calma - Reportes</title>
     <link rel="stylesheet" href="../solicitudes/solicitudes.css">
     <link rel="stylesheet" href="reportes.css">
+    <link rel="stylesheet" href="/comun/navbar.css">
 </head>
 
 <body>
@@ -16,11 +17,14 @@
         <img src="../assets/logo.png" alt="Invercalma - Grupo Calma" class="logo">
     </div>
 
-    <nav class="nav">
-        <a href="/dashboard/dashboard.html">Dashboard</a>
-        <a href="/solicitudes/solicitudes.html">Mis Solicitudes</a>
-        <a href="/reportes/reportes.html" class="activo">Reportes</a>
-    </nav>
+        <nav class="nav">
+            <a href="/dashboard/dashboard.html">Dashboard</a>
+            <a href="/solicitudes/solicitudes.html">Mis Solicitudes</a>
+            <a href="/aprobaciones/aprobaciones.html" id="navAprobaciones" style="display:none">Aprobaciones</a>
+            <a href="/usuarios/usuarios.html" id="navUsuarios" style="display:none">Gestión de usuarios</a>
+            <a href="/empleados/empleados.html" id="navEmpleados" style="display:none">Gestión de empleados</a>
+            <a href="/reportes/reportes.html" id="navReportes" style="display:none" class="activo">Reportes</a>
+        </nav>
 
     <div class="usuario-area">
         <span>♙</span>
@@ -196,6 +200,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="/comun/exportar.js"></script>
 <script src="reportes.js"></script>
+<script src="/comun/navbar.js"></script>
 </body>
 
 </html>
