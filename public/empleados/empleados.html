@@ -208,6 +208,19 @@
                         >
                     </div>
 
+                    <!-- SALARIO -->
+                    <div class="campo">
+                        <label for="nuevoSalario">Salario mensual (USD) *</label>
+                        <input
+                            id="nuevoSalario"
+                            name="salario"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            required
+                        >
+                    </div>
+
                     <!-- USUARIO ASOCIADO -->
                     <div class="campo">
                         <label for="nuevoUsuario">Usuario asociado *</label>
@@ -317,6 +330,7 @@
                 <div><dt>Correo</dt><dd id="detalleCorreo"></dd></div>
                 <div><dt>Cargo</dt><dd id="detalleCargo"></dd></div>
                 <div><dt>Fecha de ingreso</dt><dd id="detalleFecha"></dd></div>
+                <div><dt>Salario mensual</dt><dd id="detalleSalario"></dd></div>
                 <div><dt>Jefe inmediato</dt><dd id="detalleSupervisor"></dd></div>
                 <div><dt>Estado</dt><dd id="detalleEstado"></dd></div>
             </dl>
