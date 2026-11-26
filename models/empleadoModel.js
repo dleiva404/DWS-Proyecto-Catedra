@@ -17,8 +17,8 @@ const Empleado = {
     crear: (data, callback) => {
         const query = `
             INSERT INTO empleado 
-            (id_usuario, id_supervisor, nombre, apellido, correo, cargo, fecha_ingreso, estado)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            (id_usuario, id_supervisor, nombre, apellido, correo, cargo, fecha_ingreso, salario, estado)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         db.query(query, [
@@ -29,6 +29,7 @@ const Empleado = {
             data.correo,
             data.cargo,
             data.fecha_ingreso,
+            data.salario,
             data.estado
         ], callback);
     },
@@ -43,7 +44,8 @@ const Empleado = {
                 apellido = ?,
                 correo = ?,
                 cargo = ?,
-                fecha_ingreso = ?
+                fecha_ingreso = ?,
+                salario = ?
             WHERE id_empleado = ?
         `;
 
@@ -55,6 +57,7 @@ const Empleado = {
             data.correo,
             data.cargo,
             data.fecha_ingreso,
+            data.salario,
             id
         ], callback);
     },

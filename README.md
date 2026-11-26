@@ -235,11 +235,11 @@ La base de datos incluye saldos iniciales de vacaciones para empleados de prueba
 
 El sistema permite consultar los días asignados, utilizados y disponibles, así como validar y descontar días dentro del flujo de solicitudes.
 
-La asignación automática de un saldo inicial al registrar empleados nuevos y la generación de saldos para períodos posteriores permanecen pendientes de integración.
+Al registrar un empleado nuevo se le asignan automáticamente 15 días para el año actual y el siguiente.
 
 ### Funcionalidades previstas
 
-Las opciones de constancia salarial y soporte técnico se presentan en la interfaz como funcionalidades futuras.
+La constancia salarial ya está disponible: al aprobarse se descarga en PDF con un código y un QR, que se validan en `/validar/validar.html` sin iniciar sesión. El soporte técnico se presenta en la interfaz como funcionalidad futura.
 
 ### Alcance
 

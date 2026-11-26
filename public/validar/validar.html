@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Grupo Calma - Validar constancia</title>
+    <link rel="stylesheet" href="validar.css">
+</head>
+
+<body>
+    <main class="contenedor">
+        <img src="../assets/logo.png" alt="Invercalma - Grupo Calma" class="logo">
+
+        <h1>Validación de constancias</h1>
+        <p class="subtitulo">Escribe el código que aparece en la constancia o escanea su código QR.</p>
+
+        <form id="formValidar" class="buscador">
+            <input type="text" id="codigo" placeholder="GC-XXXXXXXX" maxlength="11" autocomplete="off">
+            <button type="submit">Validar</button>
+        </form>
+
+        <div id="resultado"></div>
+    </main>
+
+    <script src="validar.js"></script>
+</body>
+
+</html>

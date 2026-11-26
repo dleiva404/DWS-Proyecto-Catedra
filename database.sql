@@ -49,6 +49,7 @@ CREATE TABLE empleado (
     correo VARCHAR(100) NOT NULL UNIQUE,
     cargo VARCHAR(100) NOT NULL,
     fecha_ingreso DATE NOT NULL,
+    salario DECIMAL(10,2) NOT NULL DEFAULT 0,
     estado BOOLEAN NOT NULL DEFAULT TRUE,
 
     CONSTRAINT fk_empleado_usuario
@@ -175,6 +176,8 @@ CREATE TABLE constancia (
     id_constancia INT AUTO_INCREMENT PRIMARY KEY,
     id_solicitud INT NOT NULL,
     tipo_constancia VARCHAR(50) NOT NULL,
+    codigo VARCHAR(20) NOT NULL UNIQUE,
+    fecha_emision DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_constancia_solicitud
         FOREIGN KEY (id_solicitud)
@@ -228,17 +231,17 @@ INSERT INTO usuario (id_rol, usuario, contrasena_hash, estado) VALUES
 -- =====================================================
 
 INSERT INTO empleado
-(id_usuario, id_supervisor, nombre, apellido, correo, cargo, fecha_ingreso, estado)
+(id_usuario, id_supervisor, nombre, apellido, correo, cargo, fecha_ingreso, salario, estado)
 VALUES
-(2, NULL, 'Carlos Alberto', 'Cornejo Calderón', 'carlos.cornejo@grupocalma.com', 'Jefe de Área', '2022-03-10', TRUE),
-(1, 1, 'Nelson Mauricio', 'Solano Guardado', 'nelson.solano@grupocalma.com', 'Auxiliar administrativo', '2024-01-15', TRUE),
-(3, 1, 'Sara Michelle', 'Cea Rias', 'sara.cea@grupocalma.com', 'Analista de Nómina', '2023-05-02', TRUE),
-(4, NULL, 'David Antonio', 'Leiva Martínez', 'david.leiva@grupocalma.com', 'Gerente de RRHH', '2021-08-16', TRUE),
-(5, 1, 'Lily Astrid', 'Pérez Avelar', 'lily.perez@grupocalma.com', 'Asistente de planilla', '2024-06-03', TRUE),
-(6, 1, 'Jehudi Neftalí', 'Aguilar Araujo', 'jehudi.aguilar@grupocalma.com', 'Administrador de TI', '2023-11-20', TRUE),
-(7, 1, 'María José', 'Hernández Ramos', 'maria.hernandez@grupocalma.com', 'Vendedora', '2024-02-12', TRUE),
-(8, 1, 'José Roberto', 'Ramírez Mejía', 'jose.ramirez@grupocalma.com', 'Bodeguero', '2023-09-04', TRUE),
-(9, 1, 'Karla Beatriz', 'Flores Castillo', 'karla.flores@grupocalma.com', 'Cajera', '2025-03-17', TRUE);
+(2, NULL, 'Carlos Alberto', 'Cornejo Calderón', 'carlos.cornejo@grupocalma.com', 'Jefe de Área', '2022-03-10', 1450.00, TRUE),
+(1, 1, 'Nelson Mauricio', 'Solano Guardado', 'nelson.solano@grupocalma.com', 'Auxiliar administrativo', '2024-01-15', 650.00, TRUE),
+(3, 1, 'Sara Michelle', 'Cea Rias', 'sara.cea@grupocalma.com', 'Analista de Nómina', '2023-05-02', 1100.00, TRUE),
+(4, NULL, 'David Antonio', 'Leiva Martínez', 'david.leiva@grupocalma.com', 'Gerente de RRHH', '2021-08-16', 2200.00, TRUE),
+(5, 1, 'Lily Astrid', 'Pérez Avelar', 'lily.perez@grupocalma.com', 'Asistente de planilla', '2024-06-03', 850.00, TRUE),
+(6, 1, 'Jehudi Neftalí', 'Aguilar Araujo', 'jehudi.aguilar@grupocalma.com', 'Administrador de TI', '2023-11-20', 1250.00, TRUE),
+(7, 1, 'María José', 'Hernández Ramos', 'maria.hernandez@grupocalma.com', 'Vendedora', '2024-02-12', 600.00, TRUE),
+(8, 1, 'José Roberto', 'Ramírez Mejía', 'jose.ramirez@grupocalma.com', 'Bodeguero', '2023-09-04', 550.00, TRUE),
+(9, 1, 'Karla Beatriz', 'Flores Castillo', 'karla.flores@grupocalma.com', 'Cajera', '2025-03-17', 500.00, TRUE);
 
 -- =====================================================
 -- DATOS DE PRUEBA: SALDOS DE VACACIONES
@@ -430,3 +433,13 @@ VALUES
 -- 36: vacaciones de Carlos (Analista -> Gerente) - pendiente
 (36, 3, 'Analista de Nómina', 1, 'Aprobada', '2026-11-06 08:10:00', '2026-11-07 07:10:00', 'Aprobada', NULL, 3),
 (36, 4, 'Gerente', 2, 'Pendiente', '2026-11-07 07:10:00', NULL, NULL, NULL, NULL);
+
+-- constancias ya aprobadas, con su codigo para validarlas
+INSERT INTO constancia
+(id_solicitud, tipo_constancia, codigo, fecha_emision)
+VALUES
+(8, 'Salarial', 'GC-7F3A9C21', '2026-02-05 11:05:00'),
+(12, 'Salarial', 'GC-2B8E4D10', '2026-03-13 12:10:00'),
+(19, 'Salarial', 'GC-9C1F6A37', '2026-06-11 14:00:00'),
+(23, 'Salarial', 'GC-4E7D2B58', '2026-08-07 11:00:00'),
+(25, 'Salarial', 'GC-6A5C8E93', '2026-09-04 13:25:00');

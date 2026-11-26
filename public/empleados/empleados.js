@@ -369,6 +369,8 @@ async function abrirFormulario(empleado = null) {
         document.getElementById('nuevoFecha').value = fecha
             ? String(fecha).slice(0, 10)
             : '';
+
+        document.getElementById('nuevoSalario').value = empleadoEnEdicion.salario ?? '';
     }
 
     mensajeFormulario.hidden = true;
@@ -537,7 +539,8 @@ async function guardarEmpleado(evento) {
         apellido: datos.apellido.trim(),
         correo: datos.correo.trim(),
         cargo: datos.cargo.trim(),
-        fecha_ingreso: datos.fecha_ingreso
+        fecha_ingreso: datos.fecha_ingreso,
+        salario: Number(datos.salario)
     };
 
     const editando = Boolean(empleadoEnEdicion);
@@ -832,6 +835,7 @@ function abrirDetalleEmpleado(empleado) {
         detalleCorreo: empleado.correo || 'No registrado',
         detalleCargo: empleado.cargo || 'No registrado',
         detalleFecha: fecha,
+        detalleSalario: `$${Number(empleado.salario || 0).toFixed(2)}`,
         detalleSupervisor: supervisor ? nombreCompleto(supervisor) : (empleado.id_supervisor ? 'No disponible' : 'Sin asignar'),
         detalleEstado: activo ? 'Activo' : 'Inactivo'
     };

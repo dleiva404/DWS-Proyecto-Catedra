@@ -78,13 +78,8 @@ form.addEventListener('submit', async e => {
         return;
     }
 
-    if (valor === '3' || valor === '4') {
-        mostrarMensaje(
-            valor === '3'
-                ? 'La Constancia Salarial estará disponible próximamente.'
-                : 'El Soporte Técnico estará disponible próximamente.',
-            'error'
-        );
+    if (valor === '4') {
+        mostrarMensaje('El Soporte Técnico estará disponible próximamente.', 'error');
         return;
     }
 
@@ -222,6 +217,7 @@ async function cargarSolicitudes() {
                     <td>
                         <button type="button" class="btn-adjunto btn-historial" data-id="${s.id_solicitud}">Ver historial</button>
                         ${s.estado === 'Pendiente' ? `<button type="button" class="btn-cancelar" data-id="${s.id_solicitud}">Cancelar</button>` : ''}
+                        ${id === 3 && s.estado === 'Aprobada' ? `<button type="button" class="btn-adjunto btn-constancia" data-id="${s.id_solicitud}">Descargar constancia</button>` : ''}
                     </td>
                 </tr>`;
         }).join('');
@@ -335,9 +331,87 @@ async function cancelarSolicitud(id) {
     }
 }
 
+// Descargar la constancia aprobada en PDF, con codigo y QR para validarla
+async function descargarConstancia(id) {
+    try {
+        const respuesta = await fetch(`/api/constancias/solicitud/${id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const datos = await respuesta.json();
+        if (!respuesta.ok) throw new Error(datos.error || 'No se pudo obtener la constancia');
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const ancho = doc.internal.pageSize.getWidth();
+        const urlValidar = `${location.origin}/validar/validar.html?codigo=${datos.codigo}`;
+        const fechaLarga = f => new Date(f).toLocaleDateString('es-SV', { day: 'numeric', month: 'long', year: 'numeric' });
+        const salario = datos.salario.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+
+        // encabezado con el logo
+        const logo = await cargarLogo();
+        if (logo) doc.addImage(logo, 'PNG', 20, 12, 55, 14);
+        doc.setDrawColor(37, 99, 235);
+        doc.setLineWidth(0.8);
+        doc.line(20, 32, ancho - 20, 32);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(18);
+        doc.setTextColor(30, 58, 138);
+        doc.text('CONSTANCIA SALARIAL', ancho / 2, 50, { align: 'center' });
+
+        // cuerpo
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(12);
+        doc.setTextColor(15, 23, 42);
+
+        const parrafo = `Por medio de la presente, el Departamento de Recursos Humanos de Grupo Calma hace constar que ${datos.nombre} labora en esta empresa desde el ${fechaLarga(datos.fecha_ingreso)}, desempeñando el cargo de ${datos.cargo}, con un salario mensual de ${salario}.`;
+        doc.text(doc.splitTextToSize(parrafo, ancho - 40), 20, 68, { lineHeightFactor: 1.6 });
+        doc.text(doc.splitTextToSize('Y para los usos que el interesado estime convenientes, se extiende la presente constancia.', ancho - 40), 20, 105, { lineHeightFactor: 1.6 });
+        doc.text(`San Salvador, ${fechaLarga(datos.fecha_emision)}.`, 20, 125);
+
+        // firma
+        doc.line(65, 165, ancho - 65, 165);
+        doc.text('Recursos Humanos', ancho / 2, 172, { align: 'center' });
+        doc.setFontSize(10);
+        doc.text('Grupo Calma', ancho / 2, 178, { align: 'center' });
+
+        // QR dibujado con cuadritos negros
+        const qr = qrcode(0, 'M');
+        qr.addData(urlValidar);
+        qr.make();
+
+        const modulos = qr.getModuleCount();
+        const tamano = 38 / modulos;
+        doc.setFillColor(0, 0, 0);
+
+        for (let fila = 0; fila < modulos; fila++) {
+            for (let col = 0; col < modulos; col++) {
+                if (qr.isDark(fila, col)) doc.rect(20 + col * tamano, 215 + fila * tamano, tamano, tamano, 'F');
+            }
+        }
+
+        // datos para validar
+        doc.setTextColor(71, 85, 105);
+        doc.text('Verifica esta constancia escaneando el código QR o entrando a:', 64, 222);
+        doc.setTextColor(37, 99, 235);
+        doc.text(doc.splitTextToSize(urlValidar, ancho - 84), 64, 228);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(15, 23, 42);
+        doc.text(`Código de validación: ${datos.codigo}`, 64, 245);
+
+        doc.save(`Constancia_${datos.codigo}.pdf`);
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
 document.getElementById('tablaSolicitudes').addEventListener('click', e => {
     const botonCancelar = e.target.closest('.btn-cancelar');
     if (botonCancelar) return cancelarSolicitud(botonCancelar.dataset.id);
+
+    const botonConstancia = e.target.closest('.btn-constancia');
+    if (botonConstancia) return descargarConstancia(botonConstancia.dataset.id);
 
     const botonHistorial = e.target.closest('.btn-historial');
 

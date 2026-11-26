@@ -1,6 +1,8 @@
 const Solicitud = require('../models/solicitudModel');
 const SaldoVacaciones = require('../models/saldoVacacionesModel');
 const EtapaSolicitud = require('../models/etapaSolicitudModel');
+const Constancia = require('../models/constanciaModel');
+const crypto = require('crypto');
 const { AuthService } = require('./authService');
 
 const SolicitudService = {
@@ -223,7 +225,7 @@ const SolicitudService = {
         if (!id_empleado)
             return callback({ status: 400, mensaje: 'El empleado no está identificado' });
 
-        if (![1, 2].includes(Number(id_tipo_solicitud)))
+        if (![1, 2, 3].includes(Number(id_tipo_solicitud)))
             return callback({ status: 400, mensaje: 'Tipo de solicitud no válido' });
 
         // datos de quien solicita, para armar sus etapas
@@ -265,6 +267,28 @@ const SolicitudService = {
                         });
                     }
                 );
+            }
+
+            // constancia: no lleva fechas y sigue el mismo flujo que un permiso
+            if (Number(id_tipo_solicitud) === 3) {
+                return Solicitud.crear({
+                    id_empleado,
+                    id_tipo_solicitud: 3,
+                    fecha_inicio: null,
+                    fecha_fin: null,
+                    motivo: typeof motivo === 'string' && motivo.trim() ? motivo.trim() : null,
+                    archivo_adjunto: archivo_adjunto || null,
+                    estado: 'Pendiente'
+                }, (err, resultado) => {
+                    if (err) return callback({ status: 500, mensaje: 'Error al crear la solicitud de constancia' });
+
+                    const id = resultado.insertId;
+
+                    crearEtapas(armarEtapas(3, solicitante, id), 0, errorEtapas => {
+                        if (errorEtapas) return callback(errorEtapas);
+                        callback(null, { mensaje: 'Solicitud de constancia creada correctamente', id_solicitud: id });
+                    });
+                });
             }
 
             if (typeof motivo !== 'string' || !motivo.trim())
@@ -572,7 +596,17 @@ function finalizarSolicitud(id_solicitud, callback) {
         if (Number(solicitud.id_tipo_solicitud) !== 1) {
             return Solicitud.actualizarEstado(id_solicitud, 'Aprobada', err => {
                 if (err) return callback({ status: 500, mensaje: 'No se pudo finalizar la solicitud' });
-                callback(null, { mensaje: 'Solicitud aprobada correctamente' });
+
+                if (Number(solicitud.id_tipo_solicitud) !== 3)
+                    return callback(null, { mensaje: 'Solicitud aprobada correctamente' });
+
+                // constancia aprobada: se emite con un codigo unico para validarla
+                const codigo = 'GC-' + crypto.randomBytes(4).toString('hex').toUpperCase();
+
+                Constancia.crear({ id_solicitud, tipo_constancia: 'Salarial', codigo }, err => {
+                    if (err) return callback({ status: 500, mensaje: 'No se pudo emitir la constancia' });
+                    callback(null, { mensaje: 'Constancia aprobada y emitida correctamente' });
+                });
             });
         }
 

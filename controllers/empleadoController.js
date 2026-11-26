@@ -10,6 +10,9 @@ function validarDatosEmpleado(datos, idEmpleado) {
     if (isNaN(new Date(datos.fecha_ingreso)))
         return 'La fecha de ingreso no es válida';
 
+    if (datos.salario !== undefined && datos.salario !== '' && (isNaN(datos.salario) || Number(datos.salario) < 0))
+        return 'El salario no es válido';
+
     if (idEmpleado && datos.id_supervisor && Number(datos.id_supervisor) === Number(idEmpleado))
         return 'Un empleado no puede ser su propio supervisor';
 
@@ -125,6 +128,7 @@ const crearEmpleado = (req, res) => {
         correo,
         cargo,
         fecha_ingreso,
+        salario: Number(req.body.salario) || 0,
         estado: true
     };
 
@@ -214,7 +218,8 @@ const actualizarEmpleado = (req, res) => {
         apellido,
         correo,
         cargo,
-        fecha_ingreso
+        fecha_ingreso,
+        salario: Number(req.body.salario) || 0
     };
 
     Empleado.actualizar(id, empleadoActualizado, (err, resultado) => {
