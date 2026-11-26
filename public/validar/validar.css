@@ -1,0 +1,117 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: #f1f5f9;
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: #0f172a;
+}
+
+.contenedor {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 40px 16px;
+    text-align: center;
+}
+
+.logo {
+    width: 220px;
+    max-width: 80%;
+}
+
+h1 {
+    margin: 20px 0 6px;
+    color: #1e3a8a;
+    font-size: 24px;
+}
+
+.subtitulo {
+    margin: 0 0 22px;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.buscador {
+    display: flex;
+    gap: 10px;
+}
+
+.buscador input {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 16px;
+    text-transform: uppercase;
+}
+
+.buscador button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.tarjeta {
+    margin-top: 24px;
+    padding: 22px;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+    text-align: left;
+}
+
+.tarjeta h2 {
+    margin: 0 0 14px;
+    font-size: 19px;
+}
+
+.valida {
+    border-top: 6px solid #059669;
+}
+
+.valida h2 {
+    color: #047857;
+}
+
+.no-valida {
+    border-top: 6px solid #dc2626;
+}
+
+.no-valida h2 {
+    color: #b91c1c;
+}
+
+.tarjeta dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px 14px;
+    margin: 0;
+    font-size: 14px;
+}
+
+.tarjeta dt {
+    color: #64748b;
+}
+
+.tarjeta dd {
+    margin: 0;
+    font-weight: 600;
+}
+
+.aviso {
+    margin: 14px 0 0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 13px;
+}
