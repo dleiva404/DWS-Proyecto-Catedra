@@ -10,6 +10,9 @@ const puedeConsultar = AuthMiddleware.verificarRol(ROLES.ADMIN_TI, ROLES.ASISTEN
 const puedeEditar = AuthMiddleware.verificarRol(ROLES.ADMIN_TI, ROLES.ASISTENTE);
 const soloAdmin = AuthMiddleware.verificarRol(ROLES.ADMIN_TI);
 
+// Saldo del empleado que inicio sesion (cualquier rol)
+router.get('/mi-saldo', empleadoController.obtenerMiSaldo);
+
 // Obtener todos los empleados
 router.get('/', puedeConsultar, empleadoController.listarEmpleados);
 

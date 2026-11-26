@@ -47,6 +47,15 @@
         <section class="panel">
             <h2>Por resolver</h2>
 
+            <div class="filtros-lista">
+                <select id="filtroListaTipo">
+                    <option value="">Todos los tipos</option>
+                    <option value="Vacaciones">Vacaciones</option>
+                    <option value="Permiso">Permiso</option>
+                    <option value="Constancia">Constancia</option>
+                </select>
+            </div>
+
             <div class="tabla-contenedor">
                 <table>
                     <thead>
@@ -118,6 +127,7 @@
         </div>
     </div>
 
+    <script src="/comun/filtros.js"></script>
     <script src="aprobaciones.js"></script>
     <script src="/comun/navbar.js"></script>
 </body>

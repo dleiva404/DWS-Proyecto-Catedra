@@ -55,10 +55,14 @@ async function cargarPendientes() {
                 </td>
             </tr>`).join('');
 
+        aplicarFiltrosLista('tablaPendientes', 2, null);
+
     } catch (error) {
         tabla.innerHTML = '<tr><td colspan="9">No se pudieron cargar las solicitudes pendientes.</td></tr>';
     }
 }
+
+activarFiltrosLista('tablaPendientes', 2, null);
 
 tabla.addEventListener('click', e => {
 

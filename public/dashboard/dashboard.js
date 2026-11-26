@@ -83,6 +83,22 @@ async function cargarSolicitudes() {
     }
 }
 
+// Card con los dias de vacaciones que le quedan al usuario este año
+async function cargarSaldo() {
+    try {
+        const respuesta = await fetch('/api/empleados/mi-saldo', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        const saldo = await respuesta.json();
+
+        document.getElementById('diasDisponibles').textContent = saldo.registrado
+            ? `${saldo.dias_disponibles} de ${saldo.dias_asignados}`
+            : 'Sin saldo';
+    } catch (error) {
+        document.getElementById('diasDisponibles').textContent = '-';
+    }
+}
+
 function formatearFecha(fecha) {
     if (!fecha) return '-';
     return new Date(fecha).toLocaleDateString('es-SV');
@@ -104,3 +120,4 @@ document.getElementById('cerrarSesion').addEventListener('click', async () => {
 });
 
 cargarSolicitudes();
+cargarSaldo();

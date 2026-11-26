@@ -150,9 +150,36 @@ const crearEmpleado = (req, res) => {
             });
         }
 
-        res.status(201).json({
-            mensaje: 'Empleado creado exitosamente',
-            id: resultado.insertId
+        // saldo inicial de vacaciones: año actual y el siguiente
+        const anio = new Date().getFullYear();
+        const saldo = { id_empleado: resultado.insertId, dias_asignados: 15, dias_utilizados: 0 };
+
+        SaldoVacaciones.crear({ ...saldo, anio }, () => {
+            SaldoVacaciones.crear({ ...saldo, anio: anio + 1 }, () => {
+                res.status(201).json({
+                    mensaje: 'Empleado creado exitosamente',
+                    id: resultado.insertId
+                });
+            });
+        });
+    });
+};
+
+// Saldo de vacaciones del empleado que inicio sesion (para la card del dashboard)
+const obtenerMiSaldo = (req, res) => {
+    const anio = new Date().getFullYear();
+
+    if (!req.usuario.id_empleado) return res.json({ anio, registrado: false });
+
+    SaldoVacaciones.obtenerDiasDisponibles(req.usuario.id_empleado, anio, (error, saldos) => {
+        if (error) return res.status(500).json({ error: 'No fue posible consultar el saldo de vacaciones' });
+        if (!saldos.length) return res.json({ anio, registrado: false });
+
+        res.json({
+            anio,
+            registrado: true,
+            dias_asignados: Number(saldos[0].dias_asignados),
+            dias_disponibles: Number(saldos[0].dias_disponibles)
         });
     });
 };
@@ -274,6 +301,7 @@ module.exports = {
     listarEmpleados,
     obtenerEmpleadoPorId,
     obtenerSaldoVacaciones,
+    obtenerMiSaldo,
     crearEmpleado,
     actualizarEmpleado,
     eliminarEmpleado,

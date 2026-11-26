@@ -87,6 +87,16 @@ const resolverEtapa = (req, res) => {
     );
 };
 
+const cancelarSolicitud = (req, res) => {
+    if (!/^\d+$/.test(req.params.id))
+        return res.status(400).json({ error: 'El ID de la solicitud no es válido' });
+
+    SolicitudService.cancelarSolicitud(req.params.id, req.usuario.id_empleado, (error, resultado) => {
+        if (error) return res.status(error.status || 500).json({ error: error.mensaje });
+        res.json(resultado);
+    });
+};
+
 function obtenerIdRol(rol) {
     const roles = {
         'Empleado': 1,
@@ -140,5 +150,6 @@ module.exports = {
     obtenerHistorial,
     crearSolicitud,
     resolverEtapa,
+    cancelarSolicitud,
     obtenerArchivo
 };
