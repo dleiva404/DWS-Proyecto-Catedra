@@ -14,13 +14,15 @@ document.getElementById('nombreUsuario').textContent = usuario.nombre || usuario
 const filtroDesde = document.getElementById('filtroDesde');
 const filtroHasta = document.getElementById('filtroHasta');
 const filtroTipo = document.getElementById('filtroTipo');
+const filtroEstado = document.getElementById('filtroEstado');
 const mensajeGeneral = document.getElementById('mensajeGeneral');
 const tablaSaldos = document.getElementById('tablaSaldos');
 
 const COLORES_ESTADO = {
     Pendiente: '#f59e0b',
     Aprobada: '#10b981',
-    Rechazada: '#ef4444'
+    Rechazada: '#ef4444',
+    Cancelada: '#94a3b8'
 };
 
 let graficoEstado = null;
@@ -34,6 +36,7 @@ async function cargarReporte() {
     if (filtroDesde.value) parametros.append('desde', filtroDesde.value);
     if (filtroHasta.value) parametros.append('hasta', filtroHasta.value);
     if (filtroTipo.value) parametros.append('tipo', filtroTipo.value);
+    if (filtroEstado.value) parametros.append('estado', filtroEstado.value);
 
     try {
         const respuesta = await fetch('/api/reportes/resumen?' + parametros.toString(), {
@@ -142,7 +145,7 @@ async function cargarTodas() {
         const solicitudes = await respuesta.json();
 
         // Se aplican los mismos filtros de arriba
-        const nombresTipo = { 1: 'Vacaciones', 2: 'Permiso' };
+        const nombresTipo = { 1: 'Vacaciones', 2: 'Permiso', 3: 'Constancia' };
 
         const filtradas = solicitudes.filter(s => {
             const fecha = new Date(s.fecha_solicitud).toLocaleDateString('en-CA');
@@ -150,6 +153,7 @@ async function cargarTodas() {
             if (filtroDesde.value && fecha < filtroDesde.value) return false;
             if (filtroHasta.value && fecha > filtroHasta.value) return false;
             if (filtroTipo.value && s.tipo !== nombresTipo[filtroTipo.value]) return false;
+            if (filtroEstado.value && s.estado !== filtroEstado.value) return false;
 
             return true;
         });
@@ -261,6 +265,7 @@ document.getElementById('btnLimpiar').addEventListener('click', () => {
     filtroDesde.value = '';
     filtroHasta.value = '';
     filtroTipo.value = '';
+    filtroEstado.value = '';
     cargarReporte();
 });
 

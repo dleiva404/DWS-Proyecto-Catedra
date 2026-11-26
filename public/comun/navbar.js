@@ -33,3 +33,84 @@ if (tarjetaUsuario) {
 // bienvenida del dashboard
 const bienvenida = document.getElementById('nombreBienvenida');
 if (bienvenida) bienvenida.textContent = nombreCorto;
+
+// ===== Notificaciones (campana) =====
+const tokenNavbar = localStorage.getItem('token');
+const claveVistos = 'avisosVistos_' + (usuarioNavbar.usuario || '');
+
+function leerVistos() {
+    try {
+        return JSON.parse(localStorage.getItem(claveVistos) || '[]');
+    } catch (error) {
+        return [];
+    }
+}
+
+async function cargarAvisos() {
+    const areaUsuario = document.querySelector('.usuario-area');
+    if (!areaUsuario || !tokenNavbar) return;
+
+    const avisos = [];
+    const cabecera = { headers: { Authorization: `Bearer ${tokenNavbar}` } };
+
+    // aprobadores: solicitudes que esperan su revision
+    if (['Jefe inmediato', 'Analista de Nómina', 'Gerente'].includes(usuarioNavbar.rol)) {
+        const respuesta = await fetch('/api/solicitudes/pendientes', cabecera);
+        if (respuesta.ok) {
+            (await respuesta.json()).forEach(p => avisos.push({
+                texto: `Por revisar: ${p.tipo} de ${p.nombre} ${p.apellido} (#${p.id_solicitud})`,
+                enlace: '/aprobaciones/aprobaciones.html'
+            }));
+        }
+    }
+
+    // todos: sus solicitudes ya resueltas que todavia no ha visto
+    const vistos = leerVistos();
+    const respuesta = await fetch('/api/solicitudes/mis-solicitudes', cabecera);
+    if (respuesta.ok) {
+        (await respuesta.json())
+            .filter(s => (s.estado === 'Aprobada' || s.estado === 'Rechazada') && !vistos.includes(s.id_solicitud))
+            .forEach(s => avisos.push({
+                texto: `Tu solicitud #${s.id_solicitud} fue ${s.estado.toLowerCase()}`,
+                enlace: '/solicitudes/solicitudes.html',
+                id: s.id_solicitud
+            }));
+    }
+
+    dibujarCampana(areaUsuario, avisos);
+}
+
+function dibujarCampana(areaUsuario, avisos) {
+    const contenedor = document.createElement('div');
+    contenedor.className = 'notificaciones';
+    contenedor.innerHTML = `
+        <button type="button" class="btn-campana" title="Notificaciones">🔔
+            ${avisos.length ? `<span class="contador-avisos">${avisos.length}</span>` : ''}
+        </button>
+        <div class="lista-avisos" hidden></div>`;
+
+    const lista = contenedor.querySelector('.lista-avisos');
+    if (!avisos.length) lista.innerHTML = '<p>No tienes notificaciones.</p>';
+
+    avisos.forEach(aviso => {
+        const enlace = document.createElement('a');
+        enlace.href = aviso.enlace;
+        enlace.textContent = aviso.texto;
+
+        // al abrir un aviso de "tu solicitud fue..." se marca como visto
+        if (aviso.id) {
+            enlace.addEventListener('click', () => {
+                localStorage.setItem(claveVistos, JSON.stringify([...leerVistos(), aviso.id]));
+            });
+        }
+        lista.appendChild(enlace);
+    });
+
+    contenedor.querySelector('.btn-campana').addEventListener('click', () => {
+        lista.hidden = !lista.hidden;
+    });
+
+    areaUsuario.prepend(contenedor);
+}
+
+cargarAvisos().catch(() => {});

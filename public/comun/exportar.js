@@ -7,7 +7,7 @@ function leerTablaExportar(idTabla) {
     const indiceDetalle = encabezados.indexOf('Detalle');
 
     const filas = Array.from(tabla.querySelectorAll('tbody tr'))
-        .filter(tr => tr.children.length > 1)
+        .filter(tr => tr.children.length > 1 && tr.style.display !== 'none')
         .map(tr => Array.from(tr.children).map(td => td.querySelector('button') ? 'Sí' : td.textContent.trim()));
 
     if (indiceDetalle >= 0) {

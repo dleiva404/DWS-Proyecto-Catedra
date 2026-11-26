@@ -61,6 +61,8 @@ function iniciarModulo() {
     elementos.btnCerrarModal.addEventListener('click', cerrarModal);
 
     elementos.buscarUsuario.addEventListener('input', renderizarUsuarios);
+    document.getElementById('filtroRol').addEventListener('change', renderizarUsuarios);
+    document.getElementById('filtroEstadoUsuario').addEventListener('change', renderizarUsuarios);
     elementos.form.addEventListener('submit', guardarUsuario);
 
     elementos.cerrarSesion.addEventListener('click', cerrarSesion);
@@ -148,6 +150,9 @@ function cargarOpcionesRoles() {
         opcion.value = rol.id_rol;
         opcion.textContent = rol.nombre;
         elementos.idRol.appendChild(opcion);
+
+        // mismo rol en el filtro de la tabla
+        document.getElementById('filtroRol').appendChild(opcion.cloneNode(true));
     });
 }
 
@@ -155,8 +160,13 @@ function cargarOpcionesRoles() {
 function renderizarUsuarios() {
     const busqueda = elementos.buscarUsuario.value.trim().toLowerCase();
 
+    const rolElegido = document.getElementById('filtroRol').value;
+    const estadoElegido = document.getElementById('filtroEstadoUsuario').value;
+
     const filtrados = usuarios.filter(usuario =>
-        String(usuario.usuario || '').toLowerCase().includes(busqueda)
+        String(usuario.usuario || '').toLowerCase().includes(busqueda) &&
+        (!rolElegido || String(usuario.id_rol) === rolElegido) &&
+        (!estadoElegido || (esActivo(usuario.estado) ? 'activo' : 'inactivo') === estadoElegido)
     );
 
     elementos.totalUsuarios.textContent = filtrados.length;

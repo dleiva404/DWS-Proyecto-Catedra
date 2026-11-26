@@ -306,6 +306,32 @@ const SolicitudService = {
         });
     },
 
+    // El empleado cancela su solicitud solo si sigue en proceso (Pendiente)
+    cancelarSolicitud: (id_solicitud, id_empleado, callback) => {
+        Solicitud.obtenerPorId(id_solicitud, (err, filas) => {
+            if (err) return callback({ status: 500, mensaje: 'Error al consultar la solicitud' });
+            if (!filas.length) return callback({ status: 404, mensaje: 'Solicitud no encontrada' });
+
+            const solicitud = filas[0];
+
+            if (solicitud.id_empleado !== id_empleado)
+                return callback({ status: 403, mensaje: 'Solo puede cancelar sus propias solicitudes' });
+
+            if (solicitud.estado !== 'Pendiente')
+                return callback({ status: 400, mensaje: 'Solo se pueden cancelar solicitudes en proceso' });
+
+            Solicitud.actualizarEstado(id_solicitud, 'Cancelada', errEstado => {
+                if (errEstado) return callback({ status: 500, mensaje: 'Error al cancelar la solicitud' });
+
+                // las etapas que faltaban ya no se van a resolver
+                EtapaSolicitud.cancelarPendientes(id_solicitud, errEtapas => {
+                    if (errEtapas) return callback({ status: 500, mensaje: 'Error al cerrar las etapas' });
+                    callback(null, { mensaje: 'Solicitud cancelada correctamente' });
+                });
+            });
+        });
+    },
+
     resolverEtapa: (id_etapa, rol, decision, comentario, id_empleado, id_usuario, callback) => {
         if (!id_etapa) return callback({ status: 400, mensaje: 'La etapa es obligatoria' });
 

@@ -69,6 +69,22 @@
             </div>
         </div>
 
+        <div class="filtros-lista">
+            <select id="filtroListaTipo">
+                <option value="">Todos los tipos</option>
+                <option value="Vacaciones">Vacaciones</option>
+                <option value="Permiso">Permiso</option>
+                <option value="Constancia">Constancia</option>
+            </select>
+            <select id="filtroListaEstado">
+                <option value="">Todos los estados</option>
+                <option value="Pendiente">Pendiente</option>
+                <option value="Aprobada">Aprobada</option>
+                <option value="Rechazada">Rechazada</option>
+                <option value="Cancelada">Cancelada</option>
+            </select>
+        </div>
+
         <div class="tabla-contenedor">
             <table id="tablaMisSolicitudes">
                 <thead>
@@ -179,6 +195,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
 <script src="/comun/exportar.js"></script>
+<script src="/comun/filtros.js"></script>
 <script src="solicitudes.js"></script>
 <script src="/comun/navbar.js"></script>
 </body>
