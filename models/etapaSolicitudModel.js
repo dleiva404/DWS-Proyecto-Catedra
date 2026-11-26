@@ -53,6 +53,17 @@ const EtapaSolicitud = {
         db.query(query, [id_rol, incluirRespaldo, idJefe, idJefe], callback);
     },
 
+    // Cierra las etapas que no se resolvieron (cuando el empleado cancela)
+    cancelarPendientes: (id_solicitud, callback) => {
+        const query = `
+            UPDATE etapa_solicitud
+            SET estado = 'Cancelada', fecha_resolucion = NOW()
+            WHERE id_solicitud = ? AND estado IN ('Pendiente', 'Bloqueada')
+        `;
+
+        db.query(query, [id_solicitud], callback);
+    },
+
     // Historial de etapas de una solicitud con el usuario responsable
     obtenerHistorial: (id_solicitud, callback) => {
         const query = `

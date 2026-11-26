@@ -219,9 +219,14 @@ async function cargarSolicitudes() {
                     <td>${s.motivo ? escaparHTML(s.motivo) : '-'}</td>
                     <td><span class="estado estado-${estado}">${s.estado}</span></td>
                     <td>${s.archivo_adjunto ? `<button type="button" class="btn-adjunto" data-id="${s.id_solicitud}">Ver archivo</button>` : '-'}</td>
-                    <td><button type="button" class="btn-adjunto btn-historial" data-id="${s.id_solicitud}">Ver historial</button></td>
+                    <td>
+                        <button type="button" class="btn-adjunto btn-historial" data-id="${s.id_solicitud}">Ver historial</button>
+                        ${s.estado === 'Pendiente' ? `<button type="button" class="btn-cancelar" data-id="${s.id_solicitud}">Cancelar</button>` : ''}
+                    </td>
                 </tr>`;
         }).join('');
+
+        aplicarFiltrosLista('tablaSolicitudes', 1, 6);
 
     } catch (error) {
         document.getElementById('tablaSolicitudes').innerHTML = '<tr><td colspan="9">No se pudieron cargar las solicitudes.</td></tr>';
@@ -309,8 +314,31 @@ function escaparHTML(texto) {
 
 actualizarFormulario();
 cargarSolicitudes();
+activarFiltrosLista('tablaSolicitudes', 1, 6);
+
+// Cancelar una solicitud que sigue en proceso
+async function cancelarSolicitud(id) {
+    if (!confirm(`¿Seguro que quieres cancelar la solicitud #${id}?`)) return;
+
+    try {
+        const respuesta = await fetch(`/api/solicitudes/${id}/cancelar`, {
+            method: 'PUT',
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const datos = await respuesta.json();
+        if (!respuesta.ok) throw new Error(datos.error || 'No se pudo cancelar la solicitud');
+
+        cargarSolicitudes();
+    } catch (error) {
+        alert(error.message);
+    }
+}
 
 document.getElementById('tablaSolicitudes').addEventListener('click', e => {
+    const botonCancelar = e.target.closest('.btn-cancelar');
+    if (botonCancelar) return cancelarSolicitud(botonCancelar.dataset.id);
+
     const botonHistorial = e.target.closest('.btn-historial');
 
     if (botonHistorial) {

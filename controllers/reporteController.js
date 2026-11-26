@@ -21,8 +21,11 @@ function validarFiltros(query) {
     if (query.desde && query.hasta && query.desde > query.hasta)
         return 'La fecha "desde" no puede ser mayor que la fecha "hasta"';
 
-    if (query.tipo && !['1', '2'].includes(String(query.tipo)))
+    if (query.tipo && !['1', '2', '3'].includes(String(query.tipo)))
         return 'El tipo de solicitud no es válido';
+
+    if (query.estado && !['Pendiente', 'Aprobada', 'Rechazada', 'Cancelada'].includes(query.estado))
+        return 'El estado no es válido';
 
     if (query.anio && !/^\d{4}$/.test(query.anio))
         return 'El año no es válido';
@@ -38,7 +41,8 @@ const obtenerResumen = async (req, res) => {
     const filtros = {
         desde: req.query.desde || null,
         hasta: req.query.hasta || null,
-        tipo: req.query.tipo || null
+        tipo: req.query.tipo || null,
+        estado: req.query.estado || null
     };
 
     const anio = req.query.anio || new Date().getFullYear();
@@ -52,7 +56,7 @@ const obtenerResumen = async (req, res) => {
             consultar(Reporte.sumarDiasUsados, anio)
         ]);
 
-        const totales = { Pendiente: 0, Aprobada: 0, Rechazada: 0 };
+        const totales = { Pendiente: 0, Aprobada: 0, Rechazada: 0, Cancelada: 0 };
         porEstado.forEach(fila => {
             totales[fila.estado] = fila.total;
         });

@@ -40,6 +40,12 @@ router.post(
     solicitudController.crearSolicitud
 );
 
+// el empleado cancela su propia solicitud mientras siga en proceso
+router.put(
+    '/:id/cancelar',
+    solicitudController.cancelarSolicitud
+);
+
 router.put(
     '/etapa/:id/resolver',
     AuthMiddleware.verificarRol(ROLES.JEFE, ROLES.ANALISTA, ROLES.GERENTE),

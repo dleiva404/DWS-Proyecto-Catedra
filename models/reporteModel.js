@@ -19,6 +19,11 @@ function armarFiltros(filtros) {
         valores.push(filtros.tipo);
     }
 
+    if (filtros.estado) {
+        where += ' AND s.estado = ?';
+        valores.push(filtros.estado);
+    }
+
     return { where, valores };
 }
 

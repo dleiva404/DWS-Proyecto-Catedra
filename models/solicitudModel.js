@@ -88,7 +88,7 @@ const Solicitud = {
             FROM solicitud
             WHERE id_empleado = ?
               AND id_tipo_solicitud = 1
-              AND estado NOT IN ('Rechazada')
+              AND estado NOT IN ('Rechazada', 'Cancelada')
               AND fecha_inicio IS NOT NULL
               AND fecha_fin IS NOT NULL
               AND fecha_inicio <= ?
