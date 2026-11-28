@@ -9,7 +9,13 @@ router.post('/login', AuthController.login);
 // Logout
 router.post('/logout', AuthMiddleware.verificarToken, AuthController.logout);
 
-//Datos del usuario logueado
+// Datos del usuario logueado
 router.get('/perfil', AuthMiddleware.verificarToken, AuthController.perfil);
+
+// Solicitar recuperación de contraseña
+router.post('/olvide-contrasena', AuthController.olvideContrasena);
+
+// Restablecer contraseña
+router.post('/restablecer-contrasena', AuthController.restablecerContrasena);
 
 module.exports = router;

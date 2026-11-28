@@ -45,10 +45,3 @@ loginForm.addEventListener('submit', async (e) => {
         mensaje.className = 'mensaje error';
     }
 });
-
-document.getElementById('olvidaste').addEventListener('click', (e) => {
-    e.preventDefault();
-
-    mensaje.textContent = 'Contacta a RRHH para recuperar tu contraseña';
-    mensaje.className = 'mensaje';
-});
