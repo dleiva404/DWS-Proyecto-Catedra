@@ -28,12 +28,12 @@ class AuthModel {
     }
 
     // Guardar solicitud de recuperación
-    static async guardarRecuperacion(idUsuario, tokenHash, expira) {
+    static async guardarRecuperacion(idUsuario, tokenHash) {
         await db.promise().query(
             `INSERT INTO recuperacion_contrasena
-             (id_usuario, token_hash, expira)
-             VALUES (?, ?, ?)`,
-            [idUsuario, tokenHash, expira]
+         (id_usuario, token_hash, expira)
+         VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 30 MINUTE))`,
+            [idUsuario, tokenHash]
         );
     }
 

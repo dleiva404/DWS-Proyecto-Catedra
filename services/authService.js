@@ -81,7 +81,7 @@ class AuthService {
 
     // Solicitar recuperación de contraseña
     static async solicitarRecuperacion(correo, urlBase) {
-        if (!correo) {
+        if (typeof correo !== 'string' || !correo.trim()) {
             throw new HttpError('Debe ingresar su correo electrónico', 400);
         }
 
@@ -101,24 +101,19 @@ class AuthService {
             .update(token)
             .digest('hex');
 
-        // El enlace tendrá una vigencia de 30 minutos
-        const expira = new Date(Date.now() + 30 * 60 * 1000);
-
         // Invalidar enlaces de recuperación anteriores
         await AuthModel.invalidarRecuperacionesAnteriores(user.id_usuario);
 
-        // Guardar la nueva solicitud
         await AuthModel.guardarRecuperacion(
             user.id_usuario,
-            tokenHash,
-            expira
+            tokenHash
         );
 
         const enlace = `${urlBase}/login/restablecer.html?token=${token}`;
 
         await enviarCorreo({
             destinatario: correo,
-            asunto: 'Recuperación de contraseña - Sistema RRHH',
+            asunto: 'Recuperación de contraseña - GRUPO CALMA',
             html: `
                 <h2>Recuperación de contraseña</h2>
                 <p>Recibimos una solicitud para restablecer tu contraseña.</p>
@@ -129,10 +124,10 @@ class AuthService {
             `
         });
     }
-    
+
     // Restablecer contraseña
     static async restablecerContrasena(token, contrasena) {
-        if (!token || !contrasena) {
+        if (typeof token !== 'string' || typeof contrasena !== 'string') {
             throw new HttpError(
                 'Debe ingresar el token y la nueva contraseña',
                 400
