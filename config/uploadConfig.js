@@ -6,6 +6,9 @@ const fs = require('fs/promises');
 // Carpeta donde se guardarán los archivos adjuntos
 const carpetaDestino = path.join(__dirname, '..', 'uploads', 'solicitudes');
 
+// Si la carpeta no existe, se crea automáticamente
+require('fs').mkdirSync(carpetaDestino, { recursive: true });
+
 // Configuración del almacenamiento
 const storage = multer.diskStorage({
 

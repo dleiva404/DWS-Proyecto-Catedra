@@ -187,6 +187,18 @@ CREATE TABLE constancia (
         UNIQUE (id_solicitud)
 );
 
+-- Enlaces para recuperar la contraseña por correo
+CREATE TABLE recuperacion_contrasena (
+    id_recuperacion INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario INT NOT NULL,
+    token_hash CHAR(64) NOT NULL UNIQUE,
+    expira DATETIME NOT NULL,
+    usado BOOLEAN NOT NULL DEFAULT FALSE,
+
+    CONSTRAINT fk_recuperacion_usuario
+        FOREIGN KEY (id_usuario)
+        REFERENCES usuario(id_usuario)
+);
 
 -- =====================================================
 -- DATOS INICIALES: ROLES

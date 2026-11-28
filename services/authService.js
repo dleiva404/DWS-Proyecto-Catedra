@@ -1,8 +1,10 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const AuthModel = require('../models/authModel');
+const { enviarCorreo } = require('./correoService');
 
-// error con codigo http
+// Error con código HTTP
 class HttpError extends Error {
     constructor(mensaje, status) {
         super(mensaje);
@@ -12,7 +14,7 @@ class HttpError extends Error {
 
 class AuthService {
 
-    // tokens logout
+    // Tokens logout
     static tokensRevocados = new Set();
 
     static logout(token) {
@@ -23,17 +25,18 @@ class AuthService {
         return AuthService.tokensRevocados.has(token);
     }
 
-    // valida que el jefe solo actue sobre su personal
+    // Valida que el jefe solo actúe sobre su personal
     static async esJefeDe(idJefe, idEmpleado) {
         if (!idJefe || !idEmpleado) return false;
         return AuthModel.esJefeDe(idJefe, idEmpleado);
     }
 
-    // la cuenta pudo desactivarse despues del login
+    // Verifica que la cuenta siga activa
     static async estaActivo(id_usuario) {
         return AuthModel.estaActivo(id_usuario);
     }
 
+    // Inicio de sesión
     static async login(usuario, contrasena) {
         if (!usuario || !contrasena) {
             throw new HttpError('Usuario y/o contraseña no ingresados', 400);
@@ -41,12 +44,12 @@ class AuthService {
 
         const user = await AuthModel.buscarPorUsuario(usuario);
 
-        // Error si el usuario fue mal ingresado o no existe
         if (!user) {
             throw new HttpError('Credenciales incorrectas', 401);
         }
-        // Error si la contraseña fue mal ingresada
+
         const valida = await bcrypt.compare(contrasena, user.contrasena_hash);
+
         if (!valida) {
             throw new HttpError('Credenciales incorrectas', 401);
         }
@@ -61,7 +64,9 @@ class AuthService {
             rol: user.rol
         };
 
-        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '8h' });
+        const token = jwt.sign(payload, process.env.JWT_SECRET, {
+            expiresIn: '8h'
+        });
 
         return {
             token,
@@ -72,6 +77,96 @@ class AuthService {
                 rol: user.rol
             }
         };
+    }
+
+    // Solicitar recuperación de contraseña
+    static async solicitarRecuperacion(correo, urlBase) {
+        if (!correo) {
+            throw new HttpError('Debe ingresar su correo electrónico', 400);
+        }
+
+        const user = await AuthModel.buscarPorCorreo(correo);
+
+        // No revelar si el correo está registrado
+        if (!user || !user.estado) {
+            return;
+        }
+
+        // Generar token aleatorio
+        const token = crypto.randomBytes(32).toString('hex');
+
+        // Guardar únicamente el hash del token
+        const tokenHash = crypto
+            .createHash('sha256')
+            .update(token)
+            .digest('hex');
+
+        // El enlace tendrá una vigencia de 30 minutos
+        const expira = new Date(Date.now() + 30 * 60 * 1000);
+
+        // Invalidar enlaces de recuperación anteriores
+        await AuthModel.invalidarRecuperacionesAnteriores(user.id_usuario);
+
+        // Guardar la nueva solicitud
+        await AuthModel.guardarRecuperacion(
+            user.id_usuario,
+            tokenHash,
+            expira
+        );
+
+        const enlace = `${urlBase}/login/restablecer.html?token=${token}`;
+
+        await enviarCorreo({
+            destinatario: correo,
+            asunto: 'Recuperación de contraseña - Sistema RRHH',
+            html: `
+                <h2>Recuperación de contraseña</h2>
+                <p>Recibimos una solicitud para restablecer tu contraseña.</p>
+                <p>Haz clic en el siguiente enlace:</p>
+                <a href="${enlace}">Restablecer mi contraseña</a>
+                <p>Este enlace expirará en 30 minutos.</p>
+                <p>Si no solicitaste este cambio, puedes ignorar este correo.</p>
+            `
+        });
+    }
+    
+    // Restablecer contraseña
+    static async restablecerContrasena(token, contrasena) {
+        if (!token || !contrasena) {
+            throw new HttpError(
+                'Debe ingresar el token y la nueva contraseña',
+                400
+            );
+        }
+
+        if (contrasena.length < 8) {
+            throw new HttpError(
+                'La contraseña debe tener al menos 8 caracteres',
+                400
+            );
+        }
+
+        // Calcular el hash del token recibido
+        const tokenHash = crypto
+            .createHash('sha256')
+            .update(token)
+            .digest('hex');
+
+        // Encriptar la nueva contraseña
+        const contrasenaHash = await bcrypt.hash(contrasena, 10);
+
+        // Validar el token y cambiar la contraseña en una transacción
+        const actualizado = await AuthModel.cambiarContrasenaConToken(
+            tokenHash,
+            contrasenaHash
+        );
+
+        if (!actualizado) {
+            throw new HttpError(
+                'El enlace no es válido o ha expirado',
+                400
+            );
+        }
     }
 }
 
